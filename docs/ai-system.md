@@ -83,3 +83,9 @@ transcript produces zero corrections.
 `ChatMessage.content` also accepts `ContentPart[]` (`{type:'image', dataUrl}`)
 for §10 picture description; the OpenAI impl maps to `input_image`/`input_text`,
 mock providers ignore images.
+
+## Roleplay engine (Phase 6)
+
+`src/server/services/roleplay.ts` (`RoleplayService`) backs Business (`/business`), Negotiation (`/negotiation`), Simulator (`/simulator`), Debate (`/debate`) and the assessment Conversation/Roleplay items. `start` links a `learning_sessions` row (goal JSON stores persona/difficulty) and inserts the scenario opener as the first AI turn; `turn` saves the learner turn first, calls `llm.structured({name:'roleplay-turn', schema:RoleplayTurnSchema, system:ROLEPLAY_PERSONA_SYSTEM({...})})` with the rolling transcript, and stores `internalNote` inside the AI turn as an HTML comment stripped by the GET API. `evaluate` picks by `domain`: `negotiation` → NEGOTIATION_EVALUATOR_SYSTEM + `computeNegotiationScore` (two ScoreResults — language/negotiation, never combined, §55); `debate` → DEBATE_EVALUATOR_SYSTEM; other domains → speech-evaluation over learner turns + objectives self-check + revealed counterpart notes. `hiddenScript` is stripped from `GET /api/roleplay/:id` until `ended_at` is set (§31). Mistakes are recorded with context `roleplay:<slug>`; each evaluation writes an ai_event with the evaluators prompt version.
+
+Mock responders for offline/dev: `roleplay-turn`, `negotiation-evaluation`, `presentation-evaluation`, `debate-evaluation`, `writing-evaluation`, `reading-evaluation`, `journal-analysis`, `tamil-to-english`, `register-evaluation`. Mock STT returns word timings only when the filename contains `timed`.

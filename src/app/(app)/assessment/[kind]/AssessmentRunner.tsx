@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { RecorderControls } from '@/components/voice/RecorderControls';
+import { RoleplayRunner } from '@/components/roleplay/RoleplayRunner';
 import { useRecorder } from '@/hooks/useRecorder';
 import { useTts } from '@/hooks/useTts';
 
@@ -191,8 +192,20 @@ function ItemRenderer({ item, busy, rec, onSubmit }: {
             className="rounded-lg bg-accent px-5 py-2 text-sm font-medium text-white disabled:opacity-40">Submit</button>
         </div>
       );
+    case 'conversation': case 'roleplay':
+      return (
+        <div className="space-y-4">
+          <p className="text-sm">{item.prompt}</p>
+          <p className="text-xs text-fg-muted">A 4-turn exchange — speak or type your replies.</p>
+          <RoleplayMini
+            scenarioSlug={item.type === 'roleplay' ? 'neg-anchor-double' : 'sim-social'}
+            title={item.prompt}
+            onEnded={(rpId) => onSubmit({ roleplaySessionId: rpId })}
+          />
+        </div>
+      );
     default:
-      // speaking / pronunciation / conversation / roleplay / storytelling / spontaneous
+      // speaking / pronunciation / storytelling / spontaneous
       return (
         <div className="space-y-4">
           {item.type === 'pronunciation' && item.audioText === undefined && item.prompt.startsWith('Say:') && (
@@ -209,4 +222,19 @@ function ItemRenderer({ item, busy, rec, onSubmit }: {
         </div>
       );
   }
+}
+
+function RoleplayMini({ scenarioSlug, title, onEnded }: { scenarioSlug: string; title: string; onEnded: (rpId: string) => void }) {
+  const [rpId, setRpId] = useState<string | null>(null);
+  const [opener, setOpener] = useState<string | null>(null);
+  const start = async () => {
+    const res = await fetch('/api/roleplay', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenarioSlug }),
+    });
+    const d = await res.json();
+    if (res.ok) { setRpId(d.id); setOpener(d.opener); }
+  };
+  if (!rpId) return <button onClick={start} className="rounded-lg bg-accent px-4 py-2 text-sm text-white">Start roleplay</button>;
+  return <RoleplayRunner rpId={rpId} opener={opener} title={title} role="You" counterpart="Counterpart" onEnded={() => onEnded(rpId)} />;
 }

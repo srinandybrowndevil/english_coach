@@ -102,3 +102,20 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 95 | Requirement traceability | Not started | No | No | — | — |  |
 | 96 | Final product standard | Not started | No | No | — | — |  |
 | 97 | Start execution | Not started | No | No | — | — |  |
+
+## Phase 6
+| Spec | Where |
+|---|---|
+| §24 Reading | `src/content/reading.ts`, `/reading`, `/api/reading/grade`, `src/lib/learning/reading-level.ts` |
+| §25 Writing | `/writing`, `src/server/services/writing.ts`, `/api/writing/evaluate` |
+| §26 Business | `/business`, `src/server/services/roleplay.ts`, `RoleplayRunner` |
+| §27 Negotiation | `/negotiation`, negotiation-evaluation responder, separate ScoreCards |
+| §28–29 Presentation/Public speaking | `/presentation`, `/presentation/techniques`, `computePresentationScore`, `deriveSpeechMetrics` |
+| §30 Debate | `/debate`, ad-hoc `debate:*` scenarios, DEBATE_EVALUATOR_SYSTEM |
+| §31 Simulator | `/simulator`, hiddenScript gating in `RoleplayService.get` |
+| §32 Tamil→English | `src/content/tamil-english.ts` (60 items), `/practice/tamil-english`, `/api/labs/tamil-english` |
+| §33 Think-in-English | `/practice/think-english`, `distinctNouns`, `containsTamil` |
+| §34–36 Recovery/Journal | recovery phrases via vocab sections; `/journal` + `JournalService` |
+| §55 | `computeNegotiationScore` separate totals; no combined number in evaluation JSON |
+| §56 | `computePresentationScore` + speech-metrics pauses/fillers/wpm |
+| §78 E register grading | `REGISTER_EVALUATOR_SYSTEM` + `RegisterEvaluationSchema` in vault drill + §23 register exercise + `/api/register/evaluate` |

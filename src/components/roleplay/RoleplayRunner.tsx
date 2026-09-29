@@ -14,8 +14,9 @@ type Eval = {
   objectivesForSelfCheck?: string[]; counterpartNotes?: string[];
 };
 
-export function RoleplayRunner({ rpId, opener, title, role, counterpart }: {
+export function RoleplayRunner({ rpId, opener, title, role, counterpart, onEnded }: {
   rpId: string; opener: string | null; title: string; role: string; counterpart: string;
+  onEnded?: () => void;
 }) {
   const [turns, setTurns] = useState<Turn[]>(opener ? [{ role: 'ai', content: opener }] : []);
   const [text, setText] = useState('');
@@ -36,7 +37,7 @@ export function RoleplayRunner({ rpId, opener, title, role, counterpart }: {
     if (res.ok) {
       setTurns((t) => [...t, { role: 'ai', content: d.reply }]);
       void tts.speak(d.reply);
-      if (d.ended) { setEnded(true); if (d.evaluation) setEvaluation(d.evaluation); }
+      if (d.ended) { setEnded(true); if (d.evaluation) setEvaluation(d.evaluation); onEnded?.(); }
     }
     setText(''); setBusy(false);
   };
@@ -52,7 +53,7 @@ export function RoleplayRunner({ rpId, opener, title, role, counterpart }: {
   const finish = async () => {
     setBusy(true);
     const d = await (await fetch(`/api/roleplay/${rpId}/end`, { method: 'POST' })).json();
-    setEvaluation(d); setEnded(true); setBusy(false);
+    setEvaluation(d); setEnded(true); setBusy(false); onEnded?.();
   };
 
   if (evaluation) {

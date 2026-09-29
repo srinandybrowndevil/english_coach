@@ -20,6 +20,7 @@ import { estimateCefr, type CefrEstimate } from '@/lib/scoring/cefr';
 import { EvaluationService } from './evaluation';
 import { ensurePromptVersion } from './prompt-version';
 import { CurriculumService } from './curriculum';
+import { RoleplayService } from './roleplay';
 
 const OBJECTIVE_TYPES = new Set(['mcq', 'cloze', 'listening_mcq', 'dictation']);
 const SPEAKING_TYPES = new Set(['speaking', 'conversation', 'roleplay', 'pronunciation']);
@@ -128,6 +129,19 @@ export class AssessmentService {
         score: correct ? 100 : 0, correct,
         feedback: correct ? 'Correct.' : `Expected: ${item.answer}`,
         evidence: `selected "${given || '—'}"`,
+      } satisfies AssessmentItemGrade;
+    } else if (response.roleplaySessionId) {
+      // Phase 6 — real multi-turn roleplay; grade from its evaluation
+      const { evaluation } = await new RoleplayService(this.db)
+        .evaluate(a.learnerId, String(response.roleplaySessionId));
+      const ev = evaluation as { kind?: string; scores?: { language?: { total?: number }; negotiation?: { total?: number } } };
+      const total = ev.scores
+          ? Math.round((((ev.scores.language?.total ?? 0) + (ev.scores.negotiation?.total ?? 0)) / 2))
+          : 60;
+      grade = {
+        score: total, correct: total >= 60,
+        feedback: 'Roleplay evaluated — see language/negotiation split.',
+        evidence: `roleplay session ${response.roleplaySessionId}`,
       } satisfies AssessmentItemGrade;
     } else {
       const ev = await this.gradeWithLLM(item, response);
