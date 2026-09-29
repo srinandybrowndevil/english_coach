@@ -332,7 +332,7 @@ CREATE TABLE "skill_definitions" (
 	"name" text NOT NULL,
 	"description" text,
 	"difficulty" integer DEFAULT 1 NOT NULL,
-	"importance" integer DEFAULT 1 NOT NULL,
+	"importance" real DEFAULT 0.5 NOT NULL,
 	"cefr_relevance" "cefr_level",
 	"exercise_types" jsonb,
 	"mastery_threshold" real DEFAULT 0.8 NOT NULL,
@@ -481,6 +481,7 @@ CREATE TABLE "collocations" (
 	"meaning" text,
 	"register" text,
 	"example" text,
+	"awkward_alternatives" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "collocations_slug_unique" UNIQUE("slug"),
 	CONSTRAINT "collocations_phrase_unique" UNIQUE("phrase")

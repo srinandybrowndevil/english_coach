@@ -1,5 +1,5 @@
 {
-  "id": "79384d92-d3ba-48bb-b284-99b626d15b1e",
+  "id": "5b773db2-a664-43f3-a498-d00582318352",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -2878,10 +2878,10 @@
         },
         "importance": {
           "name": "importance",
-          "type": "integer",
+          "type": "real",
           "primaryKey": false,
           "notNull": true,
-          "default": 1
+          "default": 0.5
         },
         "cefr_relevance": {
           "name": "cefr_relevance",
@@ -4242,6 +4242,12 @@
         "example": {
           "name": "example",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "awkward_alternatives": {
+          "name": "awkward_alternatives",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },

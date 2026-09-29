@@ -83,6 +83,7 @@ export const collocations = pgTable('collocations', {
   meaning: text('meaning'),
   register: text('register'),
   example: text('example'),
+  awkwardAlternatives: jsonb('awkward_alternatives'), // §21 wrong/near-miss forms for detection
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

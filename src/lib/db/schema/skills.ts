@@ -12,7 +12,7 @@ export const skillDefinitions = pgTable('skill_definitions', {
   name: text('name').notNull(),
   description: text('description'),
   difficulty: integer('difficulty').notNull().default(1),
-  importance: integer('importance').notNull().default(1),
+  importance: real('importance').notNull().default(0.5), // 0–1 spec §38
   cefrRelevance: cefrLevel('cefr_relevance'),
   exerciseTypes: jsonb('exercise_types'),
   masteryThreshold: real('mastery_threshold').notNull().default(0.8),
