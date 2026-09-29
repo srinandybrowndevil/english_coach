@@ -186,7 +186,22 @@ export class CurriculumService {
             .slice(0, 12)
             .map((st) => ({ def: defById.get(st.skillId)!, mastery: st.masteryScore, nextReviewAt: st.nextReviewAt, lastPractisedAt: st.lastPractisedAt }))
             .filter((x) => x.def)
-        : defs.slice(0, 12).map((def) => ({ def, mastery: 0, nextReviewAt: null, lastPractisedAt: null }));
+        : (() => {
+            // round-robin domains so a fresh plan is diverse, not 12×grammar
+            const byDom = new Map<string, (typeof defs)[number][]>();
+            for (const d of defs) byDom.set(d.domain, [...(byDom.get(d.domain) ?? []), d]);
+            const doms = [...byDom.keys()];
+            const pool: (typeof defs)[number][] = [];
+            for (let i = 0; pool.length < 12; i++) {
+              let added = false;
+              for (const dom of doms) {
+                const list = byDom.get(dom)!;
+                if (list[i]) { pool.push(list[i]!); added = true; }
+              }
+              if (!added) break;
+            }
+            return pool.slice(0, 12).map((def) => ({ def, mastery: 0, nextReviewAt: null, lastPractisedAt: null }));
+          })();
     for (const { def, mastery, nextReviewAt, lastPractisedAt } of skillPool) {
       const base = ROUTE_BY_DOMAIN[def.domain] ?? '/tutor';
       candidates.push({
