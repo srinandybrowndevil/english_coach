@@ -1,13 +1,17 @@
 import { and, eq } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import {
-  curriculumPlans, dailyPlanItems, dailyPlans, learnerProfiles, learnerSkillStates,
+  curriculumPlans, dailyPlanItems, dailyPlans, exerciseAttempts, exerciseDefinitions,
+  learnerProfiles, learnerSkillStates, learnerVocabulary, skillDefinitions,
+  skillPrerequisites, vocabularyReviews,
 } from '@/lib/db/schema';
 import type { AssessmentItem } from '@/content/assessment';
 import type { AssessmentItemGrade } from '@/lib/evaluation/schemas';
 import type { Candidate } from '@/lib/learning/planner';
 import { buildDailyPlan } from '@/lib/learning/planner';
 import { prerequisitesReady, updateSkillState, type SkillState } from '@/lib/learning/skills';
+import { scheduleReview } from '@/lib/learning/srs';
+import { updateVocabularyState } from '@/lib/learning/vocabulary-state';
 import { MistakeService } from './mistake';
 import { VocabularyService } from './vocabulary';
 
@@ -271,6 +275,85 @@ export class CurriculumService {
       .where(eq(dailyPlanItems.id, itemId));
   }
 
+  /** §17 — apply one graded attempt to the skill's learner state + log it. */
+  async recordSkillAttempt(userId: string, skillSlug: string, correct: boolean, context = 'module') {
+    const def = await this.db.query.skillDefinitions.findFirst({
+      where: eq(skillDefinitions.slug, skillSlug),
+    });
+    if (!def) return null;
+    const now = new Date();
+    let row = await this.db.query.learnerSkillStates.findFirst({
+      where: and(eq(learnerSkillStates.learnerId, userId), eq(learnerSkillStates.skillId, def.id)),
+    });
+    if (!row) {
+      [row] = await this.db.insert(learnerSkillStates)
+        .values({ learnerId: userId, skillId: def.id, status: 'unseen' }).returning();
+    }
+    const next = updateSkillState({
+      masteryScore: row!.masteryScore, confidenceScore: row!.confidenceScore,
+      attemptCount: row!.attemptCount, successCount: row!.successCount,
+      status: row!.status as SkillState['status'],
+      lastPractisedAt: row!.lastPractisedAt ?? undefined,
+      nextReviewAt: row!.nextReviewAt ?? undefined,
+      intervalIndex: row!.intervalIndex, easeFactor: row!.easeFactor,
+    }, { correct, at: now });
+    const [upd] = await this.db.update(learnerSkillStates).set({
+      masteryScore: next.masteryScore, confidenceScore: next.confidenceScore,
+      attemptCount: next.attemptCount, successCount: next.successCount,
+      status: next.status, lastPractisedAt: now, nextReviewAt: next.nextReviewAt ?? null,
+      intervalIndex: next.intervalIndex, easeFactor: next.easeFactor,
+      evidenceCount: row!.evidenceCount + 1, updatedAt: now,
+    }).where(eq(learnerSkillStates.id, row!.id)).returning();
+
+    const [ex] = await this.db.insert(exerciseDefinitions).values({
+      slug: `skill:${skillSlug}`, domain: def.domain, kind: 'skill_attempt', title: def.name, payload: {},
+    }).onConflictDoUpdate({ target: exerciseDefinitions.slug, set: { title: def.name } }).returning();
+    await this.db.insert(exerciseAttempts).values({
+      learnerId: userId, exerciseId: ex!.id,
+      payload: { context, correct } as never,
+      score: { total: correct ? 100 : 0 } as never,
+    });
+    return upd;
+  }
+
+  /** §40 — vocabulary review outcome → SRS + status via updateVocabularyState. */
+  async recordVocabularyReview(
+    userId: string, learnerVocabId: string,
+    result: 'recalled' | 'recognised' | 'used_in_context' | 'failed', sentence?: string,
+  ) {
+    const lv = await this.db.query.learnerVocabulary.findFirst({
+      where: and(eq(learnerVocabulary.id, learnerVocabId), eq(learnerVocabulary.learnerId, userId)),
+    });
+    if (!lv) throw new Error('learner vocabulary row not found');
+    const now = new Date();
+    const usageDates = (await this.db.query.vocabularyReviews.findMany({
+      where: and(eq(vocabularyReviews.learnerVocabularyId, lv.id), eq(vocabularyReviews.result, 'used_in_context')),
+    })).map((r) => r.reviewedAt.toISOString().slice(0, 10));
+
+    const next = updateVocabularyState({
+      status: lv.status as 'new' | 'learning' | 'active' | 'mastered',
+      recognitionScore: lv.recognitionScore, recallScore: lv.recallScore,
+      usageScore: lv.usageScore, successfulContextUses: lv.successfulContextUses,
+    }, result, now, usageDates);
+
+    const srs = scheduleReview(
+      { intervalIndex: lv.intervalIndex, easeFactor: lv.easeFactor },
+      result === 'failed' ? 'fail' : result === 'recognised' ? 'hard' : 'pass', now,
+    );
+    const [upd] = await this.db.update(learnerVocabulary).set({
+      status: next.status, recognitionScore: next.recognitionScore,
+      recallScore: next.recallScore, usageScore: next.usageScore,
+      successfulContextUses: next.successfulContextUses,
+      learnerSentence: sentence ?? lv.learnerSentence,
+      lastReviewedAt: now, nextReviewAt: srs.nextReviewAt,
+      intervalIndex: srs.intervalIndex, easeFactor: srs.easeFactor, updatedAt: now,
+    }).where(eq(learnerVocabulary.id, lv.id)).returning();
+    await this.db.insert(vocabularyReviews).values({
+      learnerVocabularyId: lv.id, result, context: sentence ?? null,
+    });
+    return upd;
+  }
+
   async completionPercent(userId: string) {
     const t = await this.todayPlan(userId);
     if (!t || !t.items.length) return null;
@@ -278,3 +361,4 @@ export class CurriculumService {
     return Math.round((done / t.items.length) * 100);
   }
 }
+
