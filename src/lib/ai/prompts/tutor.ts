@@ -98,6 +98,7 @@ export interface TutorContext {
   vocabularyDue: { word: string; meaning: string }[];
   goals: string[];
   recentSessionSummary: string | null;
+  learnerMemories: string[];
   difficulty: 1 | 2 | 3 | 4 | 5;
   tamilAllowed: boolean;
   englishOnly: boolean;
@@ -149,6 +150,9 @@ ${mistakes}
 
 ## Vocabulary due for review (work these into the conversation where natural; ask him to use them)
 ${vocab}
+
+## What you have learned about his English over time (durable observations, most recent first)
+${ctx.learnerMemories.length ? ctx.learnerMemories.slice(0, 6).map((m) => `- ${m}`).join('\n') : 'Nothing recorded yet.'}
 
 ## Tutor mode: ${TUTOR_MODES[ctx.mode].label}
 ${TUTOR_MODES[ctx.mode].brief}
