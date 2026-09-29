@@ -11,6 +11,7 @@ const Body = z.object({
   tutorMode: z.string().optional(),
   correctionMode: z.string().optional(),
   sessionGoal: z.string().optional(),
+  planItemId: z.string().optional(),
   difficulty: z.number().int().min(1).max(5).optional(),
 });
 

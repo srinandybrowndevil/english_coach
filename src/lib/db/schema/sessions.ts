@@ -1,5 +1,5 @@
 import {
-  pgTable, uuid, text, integer, real, jsonb, timestamp, index,
+  pgTable, uuid, text, integer, real, jsonb, timestamp, index, boolean,
 } from 'drizzle-orm/pg-core';
 import { users } from './auth';
 
@@ -14,6 +14,7 @@ export const learningSessions = pgTable(
     tutorMode: text('tutor_mode'),
     correctionMode: text('correction_mode'),
     sessionGoal: text('session_goal'),
+    planItemId: uuid('plan_item_id'),
     difficulty: integer('difficulty'),
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
     endedAt: timestamp('ended_at', { withTimezone: true }),
@@ -38,6 +39,8 @@ export const sessionTurns = pgTable(
     metrics: jsonb('metrics'), // §49 SpeechMetrics snapshot
     evaluation: jsonb('evaluation'), // {evaluation, scores} from §50 evaluator
     evaluationStatus: text('evaluation_status').notNull().default('pending'), // pending | done | failed | none
+    hiddenNote: text('hidden_note'), // AI counterpart private note — never client-visible pre-end
+    keepAudio: boolean('keep_audio').default(false), // §70 retention override
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('session_turns_session_idx').on(t.sessionId)],

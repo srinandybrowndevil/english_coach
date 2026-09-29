@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, inArray } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import {
-  learnerSkillStates, mistakePatterns, skillDefinitions, learningSessions,
+  learnerSkillStates, mistakePatterns, mistakeOccurrences, skillDefinitions, learningSessions,
 } from '@/lib/db/schema';
 
 const DAY_MS = 86_400_000;
@@ -67,15 +67,28 @@ export class ProgressService {
       return d.length ? d.reduce((a, b) => a + b, 0) / d.length : null;
     };
 
-    // past-tense occurrences per week (from mistake_patterns subcategory)
+    // §41 fix: real week-over-week delta of past-tense occurrences
     const patterns = await this.db.query.mistakePatterns.findMany({
       where: and(eq(mistakePatterns.learnerId, userId)),
+      columns: { id: true, errorSignature: true, subcategory: true },
     });
-    const tense = patterns.filter((p) => p.subcategory?.toLowerCase().includes('past'));
+    const tenseIds = new Set(patterns
+      .filter((p) => p.subcategory?.toLowerCase().includes('past')
+        || p.errorSignature === 'grammar:did-plus-past-form'
+        || p.errorSignature === 'grammar:tense-consistency')
+      .map((p) => p.id));
+    const occs = tenseIds.size
+      ? await this.db.select({ detectedAt: mistakeOccurrences.detectedAt, patternId: mistakeOccurrences.mistakePatternId })
+          .from(mistakeOccurrences)
+          .innerJoin(mistakePatterns, eq(mistakeOccurrences.mistakePatternId, mistakePatterns.id))
+          .where(and(eq(mistakePatterns.learnerId, userId), gte(mistakeOccurrences.detectedAt, w0Start)))
+      : [];
+    const c1 = occs.filter((o) => tenseIds.has(o.patternId) && o.detectedAt >= w1Start).length;
+    const c0 = occs.filter((o) => tenseIds.has(o.patternId) && o.detectedAt < w1Start).length;
 
     return {
       fillerRate: (() => { const a = rate(m0), b = rate(m1); return a != null && b != null ? { from: a, to: b } : null; })(),
-      pastTenseErrors: tense.length ? { count: tense.length } : null,
+      pastTenseErrors: (c0 || c1) ? { from: c0, to: c1 } : null,
       speakingDuration: (() => { const a = dur(m0), b = dur(m1); return a != null && b != null ? { from: a, to: b } : null; })(),
     };
   }

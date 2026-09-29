@@ -145,11 +145,11 @@ export class RoleplayService {
     });
     await this.db.insert(roleplayTurns).values({
       roleplaySessionId: rpId, role: 'ai',
-      content: res.data.reply + `\n<!--internalNote: ${res.data.internalNote}-->`,
+      content: res.data.reply, hiddenNote: res.data.internalNote,
     });
     let evaluation = null;
     if (res.data.ended) evaluation = await this.evaluate(userId, rpId);
-    return { reply: res.data.reply, ended: res.data.ended, internalNote: res.data.internalNote, evaluation };
+    return { reply: res.data.reply, ended: res.data.ended, evaluation };
   }
 
   /** §55 — negotiation gets TWO separate ScoreResults, never a combined number. */
@@ -194,7 +194,7 @@ export class RoleplayService {
         objectivesForSelfCheck: scenarioConfig(scenario!).objectives,
         counterpartNotes: turns
           .filter((t) => t.role === 'ai')
-          .map((t) => t.content.match(/<!--internalNote: (.*?)-->/)?.[1])
+          .map((t) => t.hiddenNote)
           .filter(Boolean),
       };
       system = SPEECH_EVALUATOR_SYSTEM; name = 'speech-evaluation';

@@ -14,12 +14,12 @@ export class SessionService {
 
   async start(userId: string, opts: {
     type: SessionType; tutorMode?: string; correctionMode?: string;
-    sessionGoal?: string; difficulty?: number; exerciseRef?: string;
+    sessionGoal?: string; difficulty?: number; exerciseRef?: string; planItemId?: string;
   }) {
     const [row] = await this.db.insert(learningSessions).values({
       learnerId: userId, sessionType: opts.type,
       tutorMode: opts.tutorMode, correctionMode: opts.correctionMode,
-      sessionGoal: opts.sessionGoal ?? opts.exerciseRef, difficulty: opts.difficulty,
+      sessionGoal: opts.sessionGoal ?? opts.exerciseRef, difficulty: opts.difficulty, planItemId: opts.planItemId,
     }).returning();
     return row!;
   }

@@ -1,0 +1,4 @@
+-- Schema-of-record snapshot only. The SQL diff this file would contain is already
+-- covered by hand-written migrations 0001–0003 (assessment/CEFR/daily-plan rebuild,
+-- signature labels, hidden_note, keep_audio, plan_item_id). Kept intentionally empty
+-- so fresh databases and future `drizzle-kit generate` diffs stay clean.

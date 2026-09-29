@@ -96,7 +96,10 @@ export function WritingClient({ modes }: { modes: WritingMode[] }) {
                   : null; })()}
             </div>
           ) : (
-            <button onClick={() => setRevealed(true)} className="text-sm text-fg-muted underline">
+            <button onClick={async () => {
+                setRevealed(true);
+                await fetch(`/api/writing/${result.submissionId}/reveal`, { method: 'POST' });
+              }} className="text-sm text-fg-muted underline">
               I just want to see the model versions
             </button>
           )}

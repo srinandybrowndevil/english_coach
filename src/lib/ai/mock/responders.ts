@@ -81,7 +81,9 @@ const responders: Record<string, MockResponder> = {
     const domain = (m?.[1] ?? 'speaking') as string;
     return {
       domain: ['speaking', 'listening', 'reading', 'writing', 'grammar', 'vocabulary'].includes(domain) ? domain : 'speaking',
-      score: 50, evidence: 'mock provider — no model judgement',
+      score: 50, band: 'B1', confidence: 'low',
+      strengths: ['mock strength'], weaknesses: ['mock weakness'],
+      patternRuleIds: [], evidence: 'mock provider — no model judgement',
     };
   },
 

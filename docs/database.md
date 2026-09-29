@@ -45,3 +45,10 @@ CEFR `a1`–`c2` pg enum (§57).
 `memory_embeddings` is intentionally **not** implemented — PGlite has no pgvector
 by default. `tutor_memories` (kind enum + jsonb content) covers the §43 memory
 kinds; add the embedding table when running on hosted Postgres with pgvector.
+
+## Migration rule
+
+Append-only migrations. Always regenerate the snapshot after changing schema files:
+`pnpm db:generate` must produce no diff when the schema is already migrated — if it
+proposes changes, generate the migration (never edit the snapshot by hand). The chain
+0000→0004 must apply cleanly on a fresh PGlite; integration tests enforce this.

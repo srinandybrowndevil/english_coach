@@ -98,7 +98,7 @@ export default async function HomePage() {
         <h2 className="mb-2 font-semibold">Recent improvement</h2>
         <ul className="space-y-1 text-sm">
           <li>Filler rate: {improvement.fillerRate ? `${improvement.fillerRate.from.toFixed(1)} → ${improvement.fillerRate.to.toFixed(1)} per 100 words ${improvement.fillerRate.to < improvement.fillerRate.from ? '↓' : '↑'}` : 'Not enough data yet'}</li>
-          <li>Past-tense error patterns: {improvement.pastTenseErrors ? `${improvement.pastTenseErrors.count} active` : 'Not enough data yet'}</li>
+          <li>Past-tense errors: {improvement.pastTenseErrors ? `${improvement.pastTenseErrors.from} → ${improvement.pastTenseErrors.to} this week ${improvement.pastTenseErrors.to < improvement.pastTenseErrors.from ? '↓' : '↑'}` : 'Not enough data yet'}</li>
           <li>Speaking duration: {improvement.speakingDuration ? `${Math.round(improvement.speakingDuration.from)}s → ${Math.round(improvement.speakingDuration.to)}s ${improvement.speakingDuration.to > improvement.speakingDuration.from ? '↑' : '↓'}` : 'Not enough data yet'}</li>
         </ul>
       </section>

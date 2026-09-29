@@ -156,6 +156,11 @@ export type AssessmentItemGrade = z.infer<typeof AssessmentItemGradeSchema>;
 export const CefrDomainJudgementSchema = z.object({
   domain: z.enum(['speaking', 'listening', 'reading', 'writing', 'grammar', 'vocabulary']),
   score: z.number().min(0).max(100),
+  band: z.enum(['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
+  confidence: z.enum(['low', 'medium', 'high']),
+  strengths: z.array(z.string()).max(3),
+  weaknesses: z.array(z.string()).max(3),
+  patternRuleIds: z.array(z.string()),
   evidence: z.string(),
 });
 export type CefrDomainJudgement = z.infer<typeof CefrDomainJudgementSchema>;

@@ -248,7 +248,12 @@ export class AssessmentService {
         provider: 'llm', model: res2.model, ms: 0,
         inputEvidence: { domain, itemCount: evidence.length }, confidence: 'medium',
       });
-      judgements[domain] = { score: res2.data.score, evidenceCount: byDomain[domain as Domain]!.evidenceCount };
+      judgements[domain] = {
+        score: res2.data.score, evidenceCount: byDomain[domain as Domain]!.evidenceCount,
+        band: res2.data.band, confidence: res2.data.confidence,
+        strengths: res2.data.strengths, weaknesses: res2.data.weaknesses,
+        patternRuleIds: res2.data.patternRuleIds,
+      } as never;
     }
 
     const estimate: CefrEstimate = estimateCefr(judgements as Parameters<typeof estimateCefr>[0]);

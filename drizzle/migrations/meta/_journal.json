@@ -22,6 +22,20 @@
       "when": 1790719406708,
       "tag": "0002_signature_labels",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790724417019,
+      "tag": "0003_hidden_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790724967747,
+      "tag": "0004_sync",
+      "breakpoints": true
     }
   ]
 }

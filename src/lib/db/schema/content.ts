@@ -100,6 +100,7 @@ export const roleplayTurns = pgTable(
       .references(() => roleplaySessions.id, { onDelete: 'cascade' }),
     role: text('role').notNull(),
     content: text('content').notNull(),
+    hiddenNote: text('hidden_note'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('roleplay_turns_session_idx').on(t.roleplaySessionId)],

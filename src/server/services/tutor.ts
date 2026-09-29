@@ -1,9 +1,9 @@
-import { eq } from 'drizzle-orm';
+import { and, asc, desc, eq } from 'drizzle-orm';
 import { getAI } from '@/lib/ai';
 import { recordAIEvent } from '@/lib/ai/usage';
 import { TUTOR_PROMPT_VERSION, buildTutorSystemPrompt, type CorrectionMode, type TutorMode } from '@/lib/ai/prompts/tutor';
 import type { Db } from '@/lib/db/client';
-import { learnerProfiles, learningSessions } from '@/lib/db/schema';
+import { cefrEstimates, dailyPlanItems, dailyPlans, learnerProfiles, learningSessions } from '@/lib/db/schema';
 import { TutorTurnSchema, type TutorTurn } from '@/lib/evaluation/schemas';
 import { MemoryService } from './memory';
 import { MistakeService } from './mistake';
@@ -37,11 +37,32 @@ export class TutorService {
       new SessionService(this.db).recentTurns(sessionId, 12),
     ]);
 
+    // todayObjective: the plan item that launched this session, else today's top pending item
+    let todayObjective = session.sessionGoal;
+    const today = new Date().toISOString().slice(0, 10);
+    const planItem = session.planItemId
+      ? await this.db.query.dailyPlanItems.findFirst({ where: eq(dailyPlanItems.id, session.planItemId) })
+      : (await this.db.query.dailyPlans.findFirst({
+          where: and(eq(dailyPlans.learnerId, userId), eq(dailyPlans.date, today)),
+        })) && await this.db.query.dailyPlanItems.findFirst({
+          where: and(
+            eq(dailyPlanItems.dailyPlanId, (await this.db.query.dailyPlans.findFirst({
+              where: and(eq(dailyPlans.learnerId, userId), eq(dailyPlans.date, today)),
+            }))!.id),
+            eq(dailyPlanItems.status, 'pending'),
+          ),
+          orderBy: asc(dailyPlanItems.position),
+        });
+    if (planItem?.title) todayObjective = planItem.title;
+    const latestCefr = await this.db.query.cefrEstimates.findFirst({
+      where: eq(cefrEstimates.learnerId, userId), orderBy: desc(cefrEstimates.createdAt),
+    });
+
     const ctx = {
       learnerName: profile?.name ?? 'Srinivash',
-      cefrEstimate: profile?.currentLevel ?? null,
-      cefrConfidence: null,
-      todayObjective: session.sessionGoal,
+      cefrEstimate: latestCefr?.level ?? profile?.currentLevel ?? null,
+      cefrConfidence: latestCefr?.confidence ?? null,
+      todayObjective,
       recurringMistakes: mistakes.map((m) => ({
         signature: m.errorSignature, example: m.originalExample ?? '',
         correction: m.correctedExample ?? '', occurrences: m.occurrenceCount, status: m.status,
