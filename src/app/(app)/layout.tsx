@@ -1,6 +1,10 @@
 import Link from 'next/link';
+import { eq } from 'drizzle-orm';
 import { requireSession } from '@/lib/auth/session';
 import { isMockAI } from '@/lib/ai';
+import { getDb } from '@/lib/db/client';
+import { learnerProfiles } from '@/lib/db/schema';
+import { OnboardingGate } from './OnboardingGate';
 
 // spec §7
 const NAV = [
@@ -18,7 +22,12 @@ const MOBILE_NAV = [
 ] as const;
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  await requireSession(); // real DB validation — proxy only checks cookie shape
+  const session = await requireSession(); // real DB validation — proxy only checks cookie shape
+  const profile = await (await getDb()).query.learnerProfiles.findFirst({
+    where: eq(learnerProfiles.learnerId, session.userId),
+    columns: { onboardingCompletedAt: true },
+  }).catch(() => null);
+  const needsOnboarding = !profile?.onboardingCompletedAt;
 
   return (
     <div className="flex min-h-full flex-1">
@@ -43,7 +52,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             Mock AI provider active — set OPENAI_API_KEY to enable real providers.
           </div>
         )}
-        <main className="flex-1 p-6 pb-20 md:pb-6">{children}</main>
+        <main className="flex-1 p-6 pb-20 md:pb-6">
+          <OnboardingGate needs={needsOnboarding}>{children}</OnboardingGate>
+        </main>
 
         <nav
           aria-label="Mobile"
