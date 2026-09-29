@@ -9,7 +9,7 @@ import { migrate } from 'drizzle-orm/pglite/migrator';
 import { and, eq } from 'drizzle-orm';
 import path from 'node:path';
 import * as schema from '@/lib/db/schema';
-import { roleplaySessions, roleplayScenarios, users, mistakeOccurrences } from '@/lib/db/schema';
+import { roleplayScenarios, users, mistakeOccurrences } from '@/lib/db/schema';
 import { RoleplayService } from '@/server/services/roleplay';
 import { WritingService } from '@/server/services/writing';
 import { WRITING_MODES } from '@/content/writing-templates';
