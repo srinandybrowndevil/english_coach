@@ -3,7 +3,7 @@ import type { Db } from '@/lib/db/client';
 import {
   curriculumPlans, dailyPlanItems, dailyPlans, exerciseAttempts, exerciseDefinitions,
   learnerProfiles, learnerSkillStates, learnerVocabulary, skillDefinitions,
-  skillPrerequisites, vocabularyReviews,
+  vocabularyReviews,
 } from '@/lib/db/schema';
 import type { AssessmentItem } from '@/content/assessment';
 import type { AssessmentItemGrade } from '@/lib/evaluation/schemas';
