@@ -1,81 +1,46 @@
 import {
-  pgTable, uuid, text, integer, jsonb, timestamp, index,
+  pgTable, uuid, text, integer, jsonb, timestamp, index, uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { users } from './auth';
-import { assessmentStatus, cefrLevel } from './enums';
+import { assessmentStatus } from './enums';
 
-// spec §58/§59
-export const assessments = pgTable('assessments', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  kind: text('kind').notNull(), // 'initial' | 'monthly'
-  title: text('title').notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
-
-export const assessmentSections = pgTable(
-  'assessment_sections',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    assessmentId: uuid('assessment_id')
-      .notNull()
-      .references(() => assessments.id, { onDelete: 'cascade' }),
-    domain: text('domain').notNull(),
-    position: integer('position').notNull().default(0),
-  },
-  (t) => [index('assessment_sections_assessment_idx').on(t.assessmentId)],
-);
-
-export const assessmentItems = pgTable(
-  'assessment_items',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    sectionId: uuid('section_id')
-      .notNull()
-      .references(() => assessmentSections.id, { onDelete: 'cascade' }),
-    kind: text('kind').notNull(),
-    prompt: jsonb('prompt').notNull(),
-    position: integer('position').notNull().default(0),
-  },
-  (t) => [index('assessment_items_section_idx').on(t.sectionId)],
-);
-
-export const assessmentAttempts = pgTable(
-  'assessment_attempts',
+// spec §58/§59 — a per-learner assessment run (initial or monthly)
+export const assessments = pgTable(
+  'assessments',
   {
     id: uuid('id').primaryKey().defaultRandom(),
     learnerId: uuid('learner_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    assessmentId: uuid('assessment_id')
-      .notNull()
-      .references(() => assessments.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(), // 'initial' | 'monthly'
     status: assessmentStatus('status').notNull().default('in_progress'),
+    currentSectionIndex: integer('current_section_index').notNull().default(0),
+    monthIndex: integer('month_index').notNull().default(0), // variant rotation seed (§59)
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
-    results: jsonb('results'), // CEFR estimate, domain scores, strengths/weaknesses
-    estimatedLevel: cefrLevel('estimated_level'),
+    result: jsonb('result'), // §58 output list, populated at finish
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index('assessment_attempts_learner_idx').on(t.learnerId)],
+  (t) => [index('assessments_learner_idx').on(t.learnerId)],
 );
 
+// item bank lives in src/content/assessment.ts; responses keyed by item slug
 export const assessmentResponses = pgTable(
   'assessment_responses',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    attemptId: uuid('attempt_id')
+    assessmentId: uuid('assessment_id')
       .notNull()
-      .references(() => assessmentAttempts.id, { onDelete: 'cascade' }),
-    itemId: uuid('item_id')
-      .notNull()
-      .references(() => assessmentItems.id, { onDelete: 'cascade' }),
-    response: jsonb('response'),
-    score: jsonb('score'),
+      .references(() => assessments.id, { onDelete: 'cascade' }),
+    itemSlug: text('item_slug').notNull(),
+    section: text('section').notNull(),
+    response: jsonb('response'), // { text } | { turnId } | { selected }
+    grade: jsonb('grade'),
+    gradedAt: timestamp('graded_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index('assessment_responses_attempt_idx').on(t.attemptId),
-    index('assessment_responses_item_idx').on(t.itemId),
+    uniqueIndex('assessment_responses_item_uq').on(t.assessmentId, t.itemSlug),
+    index('assessment_responses_assessment_idx').on(t.assessmentId),
   ],
 );

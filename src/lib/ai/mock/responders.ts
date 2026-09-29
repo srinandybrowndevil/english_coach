@@ -66,6 +66,30 @@ const responders: Record<string, MockResponder> = {
     };
   },
 
+  'assessment-grade': (messages) => {
+    const text = findTranscript(messages);
+    const errors = fossilisedToErrors(text);
+    return {
+      score: 60, correct: errors.length === 0,
+      feedback: 'mock grade — no model judgement',
+      evidence: 'mock provider — deterministic placeholder',
+    };
+  },
+
+  'cefr-domain-judgement': (messages) => {
+    const m = JSON.stringify(messages).match(/domain["'\s:]+(\w+)/i);
+    const domain = (m?.[1] ?? 'speaking') as string;
+    return {
+      domain: ['speaking', 'listening', 'reading', 'writing', 'grammar', 'vocabulary'].includes(domain) ? domain : 'speaking',
+      score: 50, evidence: 'mock provider — no model judgement',
+    };
+  },
+
+  'pronunciation-notes': () => ({
+    notes: ['mock provider — no phoneme evidence; confidence low'],
+    targetWords: [],
+  }),
+
   'session-summary': () => ({
     whatYouDid: 'You completed a practice session.',
     whatImproved: 'no comparison data yet',

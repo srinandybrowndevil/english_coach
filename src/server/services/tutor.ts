@@ -25,7 +25,7 @@ export class TutorService {
     if (!session) throw new Error(`session ${sessionId} not found`);
     const userId = session.learnerId;
 
-    const [settings, profile, mistakes, vocab, lastSession, , turns] = await Promise.all([
+    const [settings, profile, mistakes, vocab, lastSession, memories, turns] = await Promise.all([
       new SettingsService(this.db).get(userId),
       this.db.query.learnerProfiles.findFirst({ where: eq(learnerProfiles.learnerId, userId) }),
       new MistakeService(this.db).due(userId, 8),
@@ -33,7 +33,7 @@ export class TutorService {
       this.db.query.learningSessions.findMany({
         where: eq(learningSessions.learnerId, userId), orderBy: (t, { desc }) => desc(t.createdAt), limit: 2,
       }).then((rows) => rows.find((r) => r.id !== sessionId && r.overallSummary)),
-      new MemoryService(this.db).recall(userId, { kinds: ['learner'], limit: 5 }),
+      new MemoryService(this.db).recall(userId, { kinds: ['learner'], limit: 5 }), // bound to `memories` below
       new SessionService(this.db).recentTurns(sessionId, 12),
     ]);
 
@@ -48,6 +48,7 @@ export class TutorService {
       })),
       vocabularyDue: vocab.map((v) => ({ word: v.word, meaning: v.meaning })),
       goals: [profile?.targetLevel ? `reach ${profile.targetLevel.toUpperCase()} English` : 'advanced overall fluency'],
+      learnerMemories: memories.map((m) => m.text),
       recentSessionSummary: lastSession ? JSON.stringify(lastSession.overallSummary).slice(0, 500) : null,
       difficulty: (session.difficulty ?? settings.tutor.difficulty) as 1 | 2 | 3 | 4 | 5,
       tamilAllowed: settings.tutor.tamilEnabled,

@@ -33,7 +33,13 @@ export const learnerProfiles = pgTable('learner_profiles', {
   presentationWeaknesses: jsonb('presentation_weaknesses'),
   writingPatterns: jsonb('writing_patterns'),
   listeningWeaknesses: jsonb('listening_weaknesses'),
+  learningGoals: jsonb('learning_goals'), // jsonb copy of chosen goals for §3 model
+  activeVocabulary: jsonb('active_vocabulary'),
+  passiveVocabulary: jsonb('passive_vocabulary'),
+  masteredVocabulary: jsonb('mastered_vocabulary'),
+  skillMasteryMap: jsonb('skill_mastery_map'),
   currentCurriculumPosition: jsonb('current_curriculum_position'),
+  onboardingCompletedAt: timestamp('onboarding_completed_at', { withTimezone: true }),
   ...timestamps,
 });
 
