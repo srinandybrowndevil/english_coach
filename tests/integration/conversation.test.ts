@@ -38,8 +38,8 @@ describe('tutor conversation → mistake memory', () => {
 
     const patterns = await db.select().from(mistakePatterns).where(eq(mistakePatterns.learnerId, user!.id));
     const sigs = patterns.map((p) => p.errorSignature);
-    expect(sigs).toContain('grammar:past-tense:did-plus-past-form');
-    expect(sigs).toContain('lexical:verb-complement:discuss-about');
+    expect(sigs).toContain('grammar:did-plus-past-form');
+    expect(sigs).toContain('grammar:discuss-about');
 
     const occ = await db.select().from(mistakeOccurrences);
     expect(occ.length).toBeGreaterThanOrEqual(2);
@@ -53,7 +53,7 @@ describe('tutor conversation → mistake memory', () => {
     // second identical turn → same rows, occurrenceCount 2
     await new TutorService(db).respond(s.id, TEXT);
     const p2 = await db.select().from(mistakePatterns).where(
-      and(eq(mistakePatterns.learnerId, user!.id), eq(mistakePatterns.errorSignature, 'grammar:past-tense:did-plus-past-form')),
+      and(eq(mistakePatterns.learnerId, user!.id), eq(mistakePatterns.errorSignature, 'grammar:did-plus-past-form')),
     );
     expect(p2).toHaveLength(1);
     expect(p2[0]!.occurrenceCount).toBe(2);

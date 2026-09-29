@@ -165,7 +165,7 @@ export class CurriculumService {
         weakness: m.status === 'relapsed' ? 1 : 0.8, importance: 0.9,
         recurrence: m.occurrenceCount, reviewDueHours: m.nextReviewAt ? (m.nextReviewAt.getTime() - now.getTime()) / 3_600_000 : -1,
         goalRelevance: 0.9, hoursSinceLastPractised: 24, prerequisitesReady: true,
-        moduleRoute: '/mistakes', title: `Review: ${m.errorSignature}`,
+        moduleRoute: '/mistakes/review', title: `Review: ${m.label ?? m.errorSignature}`,
         payload: { patternId: m.id },
       });
     }

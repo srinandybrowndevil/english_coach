@@ -15,7 +15,7 @@ describe('mergeDetections (LLM + fossilised, dedupe by signature)', () => {
 
   it('fossilised detection fills gaps the LLM missed', () => {
     const items = mergeDetections([], 'We need to discuss about the roadmap.');
-    expect(items.map((i) => i.signature)).toContain('lexical:verb-complement:discuss-about');
+    expect(items.map((i) => i.signature)).toContain('grammar:discuss-about');
   });
 
   it('LLM error wins over fossilised for the same signature', () => {

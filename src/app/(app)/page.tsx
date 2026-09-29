@@ -126,10 +126,17 @@ export default async function HomePage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className="rounded-xl border border-border p-4">
-          <h2 className="mb-1 font-semibold">Mistakes due</h2>
+          <h2 className="mb-1 font-semibold">
+            Mistakes due
+            {mistakesDue.length > 0 && (
+              <span className="ml-2 text-xs font-normal text-fg-muted">
+                {[...new Set(mistakesDue.map((m) => m.status))].map((s) => `${mistakesDue.filter((m) => m.status === s).length} ${s}`).join(' · ')}
+              </span>
+            )}
+          </h2>
           {mistakesDue.length ? (
             <ul className="text-sm text-fg-muted">
-              {mistakesDue.map((m) => <li key={m.id}>{m.errorSignature} — ×{m.occurrenceCount}</li>)}
+              {mistakesDue.map((m) => <li key={m.id}>{m.label ?? m.errorSignature} — ×{m.occurrenceCount}</li>)}
             </ul>
           ) : <p className="text-sm text-fg-muted">No mistakes due for review.</p>}
         </section>

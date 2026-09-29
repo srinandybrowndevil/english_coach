@@ -23,11 +23,13 @@ export type MistakePatternState = {
   monitoringSince?: Date;
 };
 
-/** Signature derives from the canonical rule — never the learner's sentence. */
-export function buildSignature(parts: { domain: string; subcategory: string; rule: string }): string {
+/** Signature derives from the canonical rule — never the learner's sentence.
+ *  Form: `${domain}:${rule}` (kebab). Subcategory is descriptive metadata only —
+ *  different spellings of it MUST NOT create separate patterns (E2E-11). */
+export function buildSignature(parts: { domain: string; rule: string }): string {
   const kebab = (s: string) =>
     s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return [parts.domain, parts.subcategory, parts.rule].map(kebab).join(':');
+  return [parts.domain, parts.rule].map(kebab).join(':');
 }
 
 export function newMistakePattern(input: {

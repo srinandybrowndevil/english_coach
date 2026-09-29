@@ -33,6 +33,7 @@ export const mistakePatterns = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     errorSignature: text('error_signature').notNull(),
+    label: text('label'),
     domain: text('domain').notNull(),
     subcategory: text('subcategory'),
     originalExample: text('original_example'),

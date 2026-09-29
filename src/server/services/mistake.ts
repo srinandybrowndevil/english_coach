@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import { mistakeOccurrences, mistakePatterns, mistakeReviews, sessionTurns } from '@/lib/db/schema';
 import { detectFossilised } from '@/lib/memory/fossilised';
+import { normaliseRule } from '@/lib/memory/rules';
 import { applyOccurrence, applyReview, buildSignature, type MistakePatternState } from '@/lib/memory/mistakes';
 import type { GrammarError } from '@/lib/evaluation/schemas';
 
@@ -31,7 +32,7 @@ export function toState(row: PatternRow): MistakePatternState {
 
 function fromState(s: MistakePatternState) {
   return {
-    domain: s.domain, subcategory: s.subcategory, severity: s.severity,
+    domain: s.domain, subcategory: s.subcategory || '', severity: s.severity,
     status: s.status, occurrenceCount: s.occurrenceCount, contextsSeen: s.contextsSeen,
     successfulReviewCount: s.successfulReviewCount, reviewStreak: s.reviewStreak,
     firstSeenAt: s.firstSeenAt, lastSeenAt: s.lastSeenAt, nextReviewAt: s.nextReviewAt,
@@ -44,23 +45,28 @@ function fromState(s: MistakePatternState) {
 // Pure merge: fossilised detections + LLM errors → one item per signature.
 export function mergeDetections(errors: GrammarError[], text: string): {
   signature: string; quote: string; correction: string; explanation: string;
-  category: string; subcategory: string; severity: 1 | 2 | 3; kind: string;
+  category: string; subcategory: string; label: string; severity: 1 | 2 | 3; kind: string;
 }[] {
   const out = new Map<string, ReturnType<typeof mergeDetections>[number]>();
   for (const e of errors) {
-    const signature = buildSignature({ domain: e.category, subcategory: e.subcategory, rule: e.rule });
+    const canon = normaliseRule(e.category, e.rule);
+    const signature = buildSignature({ domain: canon.domain, rule: canon.ruleId });
     if (!out.has(signature))
       out.set(signature, {
         signature, quote: e.quote, correction: e.correction, explanation: e.explanation,
-        category: e.category, subcategory: e.subcategory, severity: e.severity, kind: e.kind,
+        category: canon.domain, subcategory: e.subcategory || canon.subcategory,
+        label: canon.label, severity: e.severity, kind: e.kind,
       });
   }
   for (const d of detectFossilised(text)) {
-    if (!out.has(d.signature))
-      out.set(d.signature, {
-        signature: d.signature, quote: d.span, correction: d.internationalForm,
-        explanation: d.explanation, category: d.category, subcategory: d.subcategory,
-        severity: 1, kind: 'regional',
+    const canon = normaliseRule(d.category, d.signature.split(':').pop()!);
+    const signature = buildSignature({ domain: canon.domain, rule: canon.ruleId });
+    if (!out.has(signature))
+      out.set(signature, {
+        signature, quote: d.span, correction: d.internationalForm,
+        explanation: d.explanation, category: canon.domain,
+        subcategory: d.subcategory || canon.subcategory,
+        label: canon.label, severity: 1, kind: 'regional',
       });
   }
   return [...out.values()];
@@ -97,12 +103,13 @@ export class MistakeService {
             originalExample: existing.originalExample ?? item.quote,
             correctedExample: item.correction,
             explanation: existing.explanation ?? item.explanation,
+            label: existing.label ?? item.label,
           }).where(eq(mistakePatterns.id, existing.id)).returning();
         } else {
           [row] = await tx.insert(mistakePatterns).values({
             learnerId: userId, errorSignature: item.signature,
             originalExample: item.quote, correctedExample: item.correction,
-            explanation: item.explanation, ...fields,
+            explanation: item.explanation, label: item.label, ...fields,
           }).returning();
         }
         await tx.insert(mistakeOccurrences).values({

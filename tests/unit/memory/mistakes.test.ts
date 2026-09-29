@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { applyOccurrence, applyReview, buildSignature } from '@/lib/memory/mistakes';
 
 const d = (n: number) => new Date(n * 86_400_000);
-const sig = buildSignature({ domain: 'Grammar', subcategory: 'Past tense', rule: 'did + past form' });
+const sig = buildSignature({ domain: 'Grammar', rule: 'did + past form' });
 const ev = { context: 'conversation', at: d(0), signature: sig, domain: 'grammar', subcategory: 'past-tense' };
 
 describe('buildSignature', () => {
-  it('produces lowercase kebab triples', () => {
-    expect(sig).toBe('grammar:past-tense:did-past-form');
+  it('is domain:rule — subcategory never drifts the signature', () => {
+    expect(sig).toBe('grammar:did-past-form');
+    expect(buildSignature({ domain: 'grammar', rule: 'did + past form' }))
+      .toBe('grammar:did-past-form');
   });
 });
 

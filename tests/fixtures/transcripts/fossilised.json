@@ -1,18 +1,96 @@
 {
   "cases": [
-    { "id": "did-went", "text": "I didn't went there yesterday.", "expected": ["grammar:past-tense:did-plus-past-form"] },
-    { "id": "discuss-about", "text": "Let's discuss about the project timeline.", "expected": ["lexical:verb-complement:discuss-about"] },
-    { "id": "one-of-my-friend", "text": "One of my friend recommended this.", "expected": ["grammar:plurality:one-of-my-singular"] },
-    { "id": "today-morning", "text": "Today morning I checked the mails.", "expected": ["lexical:time-adverbial:today-morning"] },
-    { "id": "have-a-doubt", "text": "I have a doubt about the deadline.", "expected": ["lexical:register:have-a-doubt"] },
-    { "id": "am-having", "text": "I am having a doubt about the schedule.", "expected": ["grammar:aspect:stative-progressive"] },
-    { "id": "do-one-thing", "text": "Do one thing: send me the file.", "expected": ["lexical:register:do-one-thing"] },
-    { "id": "cope-up", "text": "I cannot cope up with this workload.", "expected": ["lexical:phrasal-verb:cope-up"] },
-    { "id": "prepone", "text": "Can we prepone the meeting?", "expected": ["lexical:regional:prepone"] },
-    { "id": "needful", "text": "Kindly do the needful.", "expected": ["lexical:register:do-the-needful"] },
-    { "id": "good-name", "text": "May I know what is your good name?", "expected": ["lexical:register:good-name"] },
-    { "id": "years-back", "text": "I joined five years back.", "expected": ["lexical:time-adverbial:years-back"] },
-    { "id": "final-only", "text": "I reached the office yesterday only.", "expected": ["lexical:emphasis:sentence-final-only-itself"] }
+    {
+      "id": "did-went",
+      "text": "I didn't went there yesterday.",
+      "expected": [
+        "grammar:did-plus-past-form"
+      ]
+    },
+    {
+      "id": "discuss-about",
+      "text": "Let's discuss about the project timeline.",
+      "expected": [
+        "grammar:discuss-about"
+      ]
+    },
+    {
+      "id": "one-of-my-friend",
+      "text": "One of my friend recommended this.",
+      "expected": [
+        "grammar:one-of-plural"
+      ]
+    },
+    {
+      "id": "today-morning",
+      "text": "Today morning I checked the mails.",
+      "expected": [
+        "register:today-morning"
+      ]
+    },
+    {
+      "id": "have-a-doubt",
+      "text": "I have a doubt about the deadline.",
+      "expected": [
+        "register:have-a-doubt"
+      ]
+    },
+    {
+      "id": "am-having",
+      "text": "I am having a doubt about the schedule.",
+      "expected": [
+        "grammar:stative-progressive"
+      ]
+    },
+    {
+      "id": "do-one-thing",
+      "text": "Do one thing: send me the file.",
+      "expected": [
+        "register:do-one-thing"
+      ]
+    },
+    {
+      "id": "cope-up",
+      "text": "I cannot cope up with this workload.",
+      "expected": [
+        "vocabulary:cope-up"
+      ]
+    },
+    {
+      "id": "prepone",
+      "text": "Can we prepone the meeting?",
+      "expected": [
+        "register:prepone"
+      ]
+    },
+    {
+      "id": "needful",
+      "text": "Kindly do the needful.",
+      "expected": [
+        "register:do-the-needful"
+      ]
+    },
+    {
+      "id": "good-name",
+      "text": "May I know what is your good name?",
+      "expected": [
+        "register:good-name"
+      ]
+    },
+    {
+      "id": "years-back",
+      "text": "I joined five years back.",
+      "expected": [
+        "register:years-back"
+      ]
+    },
+    {
+      "id": "final-only",
+      "text": "I reached the office yesterday only.",
+      "expected": [
+        "register:sentence-final-only-itself"
+      ]
+    }
   ],
   "clean": [
     "I didn't go there yesterday.",

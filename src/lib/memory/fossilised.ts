@@ -32,7 +32,7 @@ const PAST_FORMS =
 
 export const DETECTORS: Detector[] = [
   {
-    signature: 'grammar:past-tense:did-plus-past-form', // canonical §41 example
+    signature: 'grammar:did-plus-past-form', // canonical §41 example
     pattern: new RegExp(`\\b(didn't|did not|didnt)\\s+(${PAST_FORMS})\\b`, 'gi'),
     category: 'grammar',
     subcategory: 'Past tense > Auxiliary did',
@@ -42,7 +42,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"I did not go", "I didn\'t see that".',
   },
   {
-    signature: 'lexical:verb-complement:discuss-about',
+    signature: 'grammar:discuss-about',
     pattern: /\bdiscuss(?:es|ed|ing)?\s+about\b/gi,
     category: 'lexical',
     subcategory: 'Verb complementation',
@@ -52,7 +52,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"Let\'s discuss the timeline" / "talk about the timeline".',
   },
   {
-    signature: 'grammar:plurality:one-of-my-singular',
+    signature: 'grammar:one-of-plural',
     pattern: /\bone of my (\w+)\b/gi,
     category: 'grammar',
     subcategory: 'Noun plurality',
@@ -63,7 +63,7 @@ export const DETECTORS: Detector[] = [
     filter: (m) => !m[1]!.toLowerCase().endsWith('s'),
   },
   {
-    signature: 'lexical:time-adverbial:today-morning',
+    signature: 'register:today-morning',
     pattern: /\b(today morning|today evening|yesterday night)\b/gi,
     category: 'lexical',
     subcategory: 'Time adverbials',
@@ -73,7 +73,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"This morning I checked the report."',
   },
   {
-    signature: 'lexical:register:have-a-doubt',
+    signature: 'register:have-a-doubt',
     pattern: /\bI have a doubt\b/gi,
     category: 'lexical',
     subcategory: 'Register / phrasing',
@@ -83,7 +83,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"I have a question about the scope."',
   },
   {
-    signature: 'grammar:aspect:stative-progressive',
+    signature: 'grammar:stative-progressive',
     pattern: /\bI am having (a|an) (question|doubt|problem|meeting)\b/gi,
     category: 'grammar',
     subcategory: 'Stative vs progressive',
@@ -93,7 +93,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"I have a question" / "I\'m in a meeting".',
   },
   {
-    signature: 'lexical:register:do-one-thing',
+    signature: 'register:do-one-thing',
     pattern: /\bdo one thing\b/gi,
     category: 'lexical',
     subcategory: 'Register / phrasing',
@@ -103,7 +103,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"Here\'s what I need you to do."',
   },
   {
-    signature: 'lexical:phrasal-verb:cope-up',
+    signature: 'vocabulary:cope-up',
     pattern: /\bcope up with\b/gi,
     category: 'lexical',
     subcategory: 'Phrasal verbs',
@@ -113,7 +113,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"I\'m coping with the workload."',
   },
   {
-    signature: 'lexical:regional:prepone',
+    signature: 'register:prepone',
     pattern: /\bprepone\b/gi,
     category: 'lexical',
     subcategory: 'Regional vocabulary',
@@ -123,7 +123,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"Can we bring the meeting forward to Tuesday?"',
   },
   {
-    signature: 'lexical:register:do-the-needful',
+    signature: 'register:do-the-needful',
     pattern: /\b(?:kindly\s+)?do the needful\b/gi,
     category: 'lexical',
     subcategory: 'Register / phrasing',
@@ -133,7 +133,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"Could you please process the refund?"',
   },
   {
-    signature: 'lexical:register:good-name',
+    signature: 'register:good-name',
     pattern: /\bwhat is your good name\b/gi,
     category: 'lexical',
     subcategory: 'Register / phrasing',
@@ -143,7 +143,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"May I have your name?"',
   },
   {
-    signature: 'lexical:time-adverbial:years-back',
+    signature: 'register:years-back',
     pattern: /\byears back\b/gi,
     category: 'lexical',
     subcategory: 'Time adverbials',
@@ -153,7 +153,7 @@ export const DETECTORS: Detector[] = [
     professionalAlternative: '"I joined the company two years ago."',
   },
   {
-    signature: 'lexical:emphasis:sentence-final-only-itself',
+    signature: 'register:sentence-final-only-itself',
     pattern: /\b(only|itself)(?=[.!?]?\s*$)/gim,
     category: 'lexical',
     subcategory: 'Emphasis particles',
