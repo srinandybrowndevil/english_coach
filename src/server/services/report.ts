@@ -1,8 +1,8 @@
 import { and, eq, gte, lt } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import {
-  learningSessions, speechMetrics, mistakePatterns, mistakeOccurrences, mistakeReviews,
-  learnerVocabulary, vocabularyItems, writingSubmissions, exerciseAttempts, cefrEstimates,
+  learningSessions, mistakePatterns, mistakeOccurrences, mistakeReviews,
+  learnerVocabulary, writingSubmissions, exerciseAttempts, cefrEstimates,
   sessionTurns, weeklyReports, monthlyReports,
 } from '@/lib/db/schema';
 
@@ -41,7 +41,6 @@ export class ReportService {
     const inWindow = and(eq(learningSessions.learnerId, userId), gte(learningSessions.createdAt, start), lt(learningSessions.createdAt, end));
     const sessions = await this.db.query.learningSessions.findMany({ where: inWindow, columns: { id: true, durationSeconds: true, sessionType: true } });
     const ids = new Set(sessions.map((s) => s.id));
-    const metrics = (await this.db.query.speechMetrics.findMany()).filter((m) => m.sessionId && ids.has(m.sessionId));
 
     const [occs, reviews, patterns, vocab, writes, attempts, turns, cefr, prior] = await Promise.all([
       this.db.select({ detectedAt: mistakeOccurrences.detectedAt, patternId: mistakeOccurrences.mistakePatternId })

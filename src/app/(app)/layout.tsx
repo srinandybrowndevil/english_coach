@@ -5,6 +5,7 @@ import { isMockAI } from '@/lib/ai';
 import { getDb } from '@/lib/db/client';
 import { learnerProfiles } from '@/lib/db/schema';
 import { OnboardingGate } from './OnboardingGate';
+import { SwRegister } from './SwRegister';
 
 // spec §7
 const NAV = [
@@ -18,7 +19,7 @@ const NAV = [
 ] as const;
 
 const MOBILE_NAV = [
-  ['Home', '/'], ['Tutor', '/tutor'], ['Speak', '/speak'], ['Practice', '/daily'], ['Progress', '/progress'],
+  ['Home', '/'], ['Tutor', '/tutor'], ['Speak', '/speak'], ['Practice', '/practice'], ['Progress', '/progress'],
 ] as const;
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -47,6 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <SwRegister />
         {isMockAI() && (
           <div role="status" className="border-b border-border bg-surface px-4 py-2 text-xs text-fg-muted">
             Mock AI provider active — set OPENAI_API_KEY to enable real providers.

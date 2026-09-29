@@ -25,9 +25,10 @@ const LearningSettings = z.object({
   dailyTargetMinutes: z.number().int().min(5).max(240).default(45),
   quickModeMinutes: z.number().int().min(5).max(60).default(15),
   trainingDays: z.array(z.number().int().min(0).max(6)).default([0, 1, 2, 3, 4, 5, 6]),
+  primaryGoals: z.array(z.string()).default([]),
 });
 const PrivacySettings = z.object({
-  audioRetention: z.enum(['off', '7d', '30d']).default('off'),
+  audioRetention: z.enum(['off', '7d', '30d', 'manual']).default('off'),
 });
 export const SettingsSchema = z.object({
   tutor: TutorSettings,

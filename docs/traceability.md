@@ -119,3 +119,19 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | §55 | `computeNegotiationScore` separate totals; no combined number in evaluation JSON |
 | §56 | `computePresentationScore` + speech-metrics pauses/fillers/wpm |
 | §78 E register grading | `REGISTER_EVALUATOR_SYSTEM` + `RegisterEvaluationSchema` in vault drill + §23 register exercise + `/api/register/evaluate` |
+
+## Phase 7
+| Spec | Where |
+|---|---|
+| §4 PWA | `src/app/manifest.ts`, `public/sw.js`, `SwRegister`, `/offline`, `scripts/icons.ts` |
+| §45 privacy | `/api/privacy/*`, `docs/privacy.md`, typed DELETE confirmations |
+| §60 Progress | `ProgressService.timeseries`, `/progress`, recharts + evidence expanders |
+| §61/§62 Reports | `ReportService.weekly/monthly`, `/progress/reports*` (no LLM prose) |
+| §70 Settings | `/settings` (tutor/voice/learning/privacy/theme), retention purge + `keep_audio` |
+| §71 Export | `GET /api/export` JSON + per-entity CSV |
+| §73 Observability | `src/lib/log.ts`, error boundaries, `/settings/usage` |
+| §74 Cost | `/settings/usage` counters from `ai_evaluation_events` |
+| §80 Gamification | streak/minutes/bests/mastery in Progress + Home |
+| §86/§89 | empty states; capped queries (limits) throughout |
+| Fix: internalNote | `roleplay_turns.hidden_note`, never serialised |
+| Fix: drizzle snapshot | `0004_sync` no-op SQL + `0004_snapshot.json`; `pnpm db:generate` is a no-op now |

@@ -48,8 +48,13 @@ export class SpeechService {
       const abs = path.join(dir, f);
       const s = await stat(abs).catch(() => null);
       if (s && s.mtimeMs < cutoff) {
-        await unlink(abs);
         const turnId = path.basename(f, path.extname(f));
+        // §70 — "keep manually selected" overrides retention purge
+        const keep = await this.db.query.sessionTurns.findFirst({
+          where: eq(sessionTurns.id, turnId), columns: { keepAudio: true },
+        });
+        if (keep?.keepAudio) continue;
+        await unlink(abs);
         await this.db.update(sessionTurns).set({ audioPath: null }).where(eq(sessionTurns.id, turnId));
         removed++;
       }

@@ -4,6 +4,8 @@ import { getSession } from '@/lib/auth/session';
 import { getDb } from '@/lib/db/client';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { takeTokens } from '@/lib/security/rate-limit';
+import { SettingsService } from '@/server/services/settings';
+import { SpeechService } from '@/server/services/speech';
 import { SessionService } from '@/server/services/session';
 
 const Body = z.object({
@@ -21,7 +23,13 @@ export async function POST(req: Request) {
   assertSameOrigin(req);
   if (!takeTokens(session.userId)) return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
   const body = Body.parse(await req.json());
-  const row = await new SessionService(await getDb()).start(session.userId, body);
+  const db = await getDb();
+  // purge expired audio per user's retention setting — piggybacks on session start
+  const settings = await new SettingsService(db).get(session.userId);
+  if (settings.privacy.audioRetention === '7d' || settings.privacy.audioRetention === '30d') {
+    void new SpeechService(db).purgeExpired(session.userId, settings.privacy.audioRetention).catch(() => {});
+  }
+  const row = await new SessionService(db).start(session.userId, body);
   return NextResponse.json(row);
 }
 
