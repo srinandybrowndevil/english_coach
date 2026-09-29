@@ -8,7 +8,10 @@ import { assertSameOrigin } from '@/lib/security/origin';
 import { takeTokens } from '@/lib/security/rate-limit';
 import { EvaluationService } from '@/server/services/evaluation';
 
-const Body = z.object({ taskPrompt: z.string().optional(), register: z.string().optional() });
+const Body = z.object({
+  taskPrompt: z.string().optional(), register: z.string().optional(),
+  imageDataUrl: z.string().startsWith('data:image/').optional(),
+});
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();

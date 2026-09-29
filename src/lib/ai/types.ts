@@ -1,6 +1,9 @@
 import type { z } from 'zod';
 
-export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
+export type ContentPart =
+  | { type: 'text'; text: string }
+  | { type: 'image'; dataUrl: string }; // §10 picture description; mock providers ignore images
+export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string | ContentPart[] };
 export type Tier = 'frontier' | 'balanced' | 'fast';
 export type TokenUsage = { inputTokens?: number; outputTokens?: number };
 

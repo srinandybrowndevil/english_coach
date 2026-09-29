@@ -12,8 +12,9 @@ export type MockResponder = (messages: ChatMessage[]) => unknown;
 import { detectFossilised } from '@/lib/memory/fossilised';
 
 // Deterministic, honest mock evaluator outputs — see §52/§75: never fabricate.
-const findTranscript = (messages: { role: string; content: string }[]): string => {
-  const last = messages[messages.length - 1]?.content ?? '';
+const findTranscript = (messages: ChatMessage[]): string => {
+  const lastContent = messages[messages.length - 1]?.content ?? '';
+  const last = typeof lastContent === 'string' ? lastContent : lastContent.filter((p) => p.type === 'text').map((p) => p.text).join('\n');
   const m = last.match(/Transcript:\s*([\s\S]*?)(?:\n\n|$)/);
   return (m?.[1] ?? last).trim();
 };

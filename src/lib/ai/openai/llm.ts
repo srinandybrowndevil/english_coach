@@ -21,7 +21,15 @@ function toParams(req: CompleteRequest) {
     instructions: req.system,
     input: req.messages
       .filter((m) => m.role !== 'system')
-      .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+      .map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: Array.isArray(m.content)
+          ? m.content.map((p) =>
+              p.type === 'image'
+                ? { type: 'input_image' as const, image_url: p.dataUrl, detail: 'auto' as const }
+                : { type: 'input_text' as const, text: p.text })
+          : m.content,
+      })),
     ...(req.maxTokens ? { max_output_tokens: req.maxTokens } : {}),
   };
 }
