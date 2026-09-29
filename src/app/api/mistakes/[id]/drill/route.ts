@@ -6,6 +6,9 @@ import { getDb } from '@/lib/db/client';
 import { assertSameOrigin } from '@/lib/security/origin';
 import { learningSessions, mistakePatterns, sessionTurns } from '@/lib/db/schema';
 import { EvaluationService } from '@/server/services/evaluation';
+import { getAI } from '@/lib/ai';
+import { REGISTER_EVALUATOR_SYSTEM } from '@/lib/ai/prompts/evaluators';
+import { RegisterEvaluationSchema } from '@/lib/evaluation/schemas';
 import { MistakeService } from '@/server/services/mistake';
 import { takeTokens } from '@/lib/security/rate-limit';
 
@@ -58,6 +61,16 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     feedback = success
       ? 'Clean production — the pattern did not reappear.'
       : `The pattern reappeared: ${errors.find((e) => sig.endsWith(`:${e.rule}`))?.quote ?? 'check your sentence'}`;
+    if (body.type === 'register') {
+      const reg = await getAI().llm.structured({
+        name: 'register-evaluation', schema: RegisterEvaluationSchema, tier: 'balanced',
+        system: REGISTER_EVALUATOR_SYSTEM,
+        messages: [{ role: 'user', content:
+          `Meaning to express: ${pattern.originalExample ?? pattern.errorSignature}\nTarget register: formal\nAttempt: ${body.text}` }],
+      });
+      success = success && reg.data.registerFit.score >= 60 && reg.data.meaningPreserved.value;
+      feedback = `${feedback} Register fit ${reg.data.registerFit.score}/100 — ${reg.data.oneAdjustment}`;
+    }
   }
 
   const updated = await new MistakeService(db)

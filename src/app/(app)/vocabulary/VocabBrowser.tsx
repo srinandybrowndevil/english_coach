@@ -43,11 +43,20 @@ export function VocabBrowser(props: {
   const [tab, setTab] = useState<(typeof TABS)[number]>('Due Today');
   const [selfMark, setSelfMark] = useState<Record<string, string>>({});
 
-  const markAttempt = async (slug: string, registerName: string, ok: boolean) => {
-    await fetch('/api/exercise-attempts', {
+  const [attempts, setAttempts] = useState<Record<string, string>>({});
+  const [fit, setFit] = useState<Record<string, { score: number; adjustment: string } | 'busy'>>({});
+
+  const gradeAttempt = async (slug: string, meaning: string, registerName: string) => {
+    const key = `${slug}:${registerName}`;
+    const text = attempts[key];
+    if (!text?.trim()) return;
+    setFit((f) => ({ ...f, [key]: 'busy' }));
+    const res = await fetch('/api/register/evaluate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ exerciseSlug: `register:${slug}:${registerName}`, payload: { ok } }),
+      body: JSON.stringify({ meaning, targetRegister: registerName, attempt: text, exerciseSlug: `register:${key}` }),
     });
+    const d = await res.json();
+    setFit((f) => ({ ...f, [key]: res.ok ? { score: d.registerFit.score, adjustment: d.oneAdjustment } : { score: 0, adjustment: 'failed to grade' } }));
   };
 
   return (
@@ -163,11 +172,18 @@ export function VocabBrowser(props: {
                     </div>
                     {selfMark[`${t.slug}:${reg}`] === 'show' && (
                       <>
-                        <p className="mt-1 text-fg-muted">Model: {model}</p>
-                        <div className="mt-1 flex gap-2 text-xs">
-                          <button onClick={() => markAttempt(t.slug, reg, true)} className="text-green-700 underline">I got it right</button>
-                          <button onClick={() => markAttempt(t.slug, reg, false)} className="text-amber-700 underline">Needs work</button>
-                        </div>
+                        <textarea value={attempts[`${t.slug}:${reg}`] ?? ''} rows={2}
+                          onChange={(e) => setAttempts((a) => ({ ...a, [`${t.slug}:${reg}`]: e.target.value }))}
+                          placeholder={`Write it in ${reg} register`}
+                          className="mt-1 w-full rounded border border-border bg-bg p-2 text-sm" />
+                        <button onClick={() => gradeAttempt(t.slug, t.meaning, reg)} className="text-xs underline">Grade register fit</button>
+                        {fit[`${t.slug}:${reg}`] === 'busy' && <span className="text-xs text-fg-muted"> grading…</span>}
+                        {typeof fit[`${t.slug}:${reg}`] === 'object' && (
+                          <p className="mt-1 text-xs text-fg-muted">
+                            Fit {(fit[`${t.slug}:${reg}`] as { score: number }).score}/100 — {(fit[`${t.slug}:${reg}`] as { adjustment: string }).adjustment}
+                          </p>
+                        )}
+                        <p className="mt-1 text-xs text-fg-muted">Model: {model}</p>
                       </>
                     )}
                   </div>

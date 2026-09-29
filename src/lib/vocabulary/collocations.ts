@@ -5,19 +5,20 @@ export type CollocationNote = {
 
 export function detectAwkwardCollocations(
   text: string,
-  collocations: { phrase: string; awkwardAlternatives: string[] | string | null; note?: string | null }[],
+  collocations: { phrase?: string; collocation?: string; awkwardAlternatives: string[] | string | null; note?: string | null }[],
 ): CollocationNote[] {
   const lower = ` ${text.toLowerCase()} `;
   const notes: CollocationNote[] = [];
   for (const c of collocations) {
+    const natural = c.phrase ?? c.collocation ?? '';
     const alts: string[] = Array.isArray(c.awkwardAlternatives)
       ? c.awkwardAlternatives
       : typeof c.awkwardAlternatives === 'string' ? [c.awkwardAlternatives] : [];
     for (const alt of alts) {
       if (alt && lower.includes(` ${alt.toLowerCase()} `)) {
         notes.push({
-          quote: alt, natural: c.phrase,
-          note: c.note ?? `"${alt}" is understandable but non-native — say "${c.phrase}".`,
+          quote: alt, natural,
+          note: c.note ?? `"${alt}" is understandable but non-native — say "${natural}".`,
           kind: 'unnatural',
         });
       }

@@ -123,6 +123,17 @@ export const TAMIL_TO_ENGLISH_SYSTEM = `${SHARED_RULES}
 
 Task: a Tamil sentence or idea was shown; the learner produced an English version. Return: literalBasic (a plain correct rendering), natural (what a fluent speaker would say), professional, formal (or null if not applicable), a judgement of his attempt (grammarErrors + notes), and a one-line explanation of the key difference between literal and natural.`;
 
+export const REGISTER_EVALUATOR_SYSTEM = `${SHARED_RULES}
+
+Task: register control (spec §23). You receive a meaning to express, the TARGET register (one of: very-casual, casual, neutral, professional, formal, executive, academic, diplomatic, assertive, persuasive), and the learner's attempt. Return:
+- registerFit: 0–100 with evidence — how well the attempt matches the target register (vocabulary choice, contractions, hedging, directness, sentence length, politeness markers). 100 = a fluent speaker would produce this in that register; 50 = understandable but the register is mixed; below 30 = clearly the wrong register.
+- detectedRegister: the register the attempt actually sounds like.
+- meaningPreserved: true/false with a one-line reason.
+- grammarErrors as usual (separate from register).
+- modelVersion: one natural sentence in the target register that preserves the meaning.
+- oneAdjustment: the single most useful change to move his attempt into the target register.
+Never reward formality for its own sake — an executive register is concise and direct, not ornate; a casual register may use contractions and simple words and still be perfect.`;
+
 export const SESSION_SUMMARY_SYSTEM = `${SHARED_RULES}
 
 Task: write the end-of-session summary from the stored turn evaluations and metrics you are given (spec §79). Fields: whatYouDid (2 lines), whatImproved (only from provided evidence — if none, say "no comparison data yet"), topMistakes (max 3, rule ids + quotes), bestSentence, upgradedExpression, vocabularyLearned, practiceScheduled (from the review list given), nextRecommendedActivity. Concise; no praise inflation; never invent numbers.`;

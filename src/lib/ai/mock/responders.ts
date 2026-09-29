@@ -90,6 +90,114 @@ const responders: Record<string, MockResponder> = {
     targetWords: [],
   }),
 
+  'roleplay-turn': (messages) => {
+    const text = findTranscript(messages);
+    const errors = fossilisedToErrors(text);
+    const turns = messages.filter((m) => m.role === 'assistant').length;
+    const ends = turns >= 5 || /(deal|agree|done|ok,? let'?s proceed)/i.test(text);
+    const note = `Counterpart's private note: ${errors.length ? 'learner made a phrasing slip' : 'learner is holding position'}`;
+    return {
+      reply: ends ? 'Alright — we have a deal. Good working this through with you.'
+        : errors.length
+          ? `I hear you. (Aside: "${errors[0]!.quote}" sounded off to me.) Can you explain why I should accept that?`
+          : 'I see. But why should I agree to that over the alternative?',
+      ended: ends, internalNote: note,
+    };
+  },
+
+  'negotiation-evaluation': (messages) => {
+    const text = findTranscript(messages);
+    const errors = fossilisedToErrors(text);
+    const dim = () => ({ score: 50, evidence: 'mock provider — no model judgement' });
+    return {
+      language: { grammar: dim(), clarity: dim(), tone: dim(), vocabulary: dim(), fluency: dim() },
+      negotiation: {
+        questionQuality: dim(), valueFraming: dim(), objectionHandling: dim(),
+        concessionDiscipline: dim(), boundaryClarity: dim(), alternativeGeneration: dim(), closing: dim(),
+      },
+      moments: [{
+        learnerSaid: 'the quoted line', whyItWorkedOrNot: 'mock — evaluation shape only',
+        betterResponse: 'a stronger phrasing', alternativeResponse: 'a different approach',
+      }],
+      retryChallenge: 'mock objection — retry value framing',
+      grammarErrors: errors,
+    };
+  },
+
+  'presentation-evaluation': (messages) => {
+    const text = findTranscript(messages);
+    const dim = () => ({ score: 50, evidence: 'mock provider — no model judgement' });
+    return {
+      dimensions: Object.fromEntries(
+        ['opening','structure','logicalFlow','transitions','clarity','language','pacing','pauses','emphasis','audienceFraming','conclusion'].map((d) => [d, dim()]),
+      ),
+      grammarErrors: fossilisedToErrors(text),
+      highlightMoment: null, weakestMoment: null,
+      retryInstruction: 'mock — try again with a clearer structure',
+    };
+  },
+
+  'debate-evaluation': (messages) => {
+    const dim = () => ({ score: 50, evidence: 'mock provider — no model judgement' });
+    return {
+      language: { grammar: dim(), clarity: dim(), tone: dim(), vocabulary: dim(), fluency: dim() },
+      reasoning: {
+        claim: dim(), evidence: dim(), reasoning: dim(), counterargument: dim(),
+        rebuttal: dim(), clarification: dim(), concession: dim(), summary: dim(),
+      },
+      grammarErrors: fossilisedToErrors(findTranscript(messages)),
+    };
+  },
+
+  'writing-evaluation': (messages) => {
+    const text = findTranscript(messages);
+    const errors = fossilisedToErrors(text);
+    const fixed = errors.reduce((t, e) => t.replace(e.quote, e.correction), text);
+    const dim = () => ({ score: 50, evidence: 'mock provider — no model judgement' });
+    return {
+      issues: errors.map((e) => ({ quote: e.quote, fix: e.correction, explanation: e.explanation, dimension: 'grammar' })),
+      correctedVersion: fixed, naturalVersion: fixed, advancedVersion: fixed,
+      dimensions: Object.fromEntries(
+        ['grammar','clarity','coherence','structure','vocabulary','naturalness','register','conciseness','mechanics'].map((d) => [d, dim()]),
+      ),
+      grammarErrors: errors,
+      rewriteInstruction: 'Fix the flagged grammar points and rewrite yourself.',
+    };
+  },
+
+  'reading-evaluation': () => {
+    return {
+      comprehensionScore: { score: 50, evidence: 'mock provider — no model judgement' },
+      answers: [{ item: 'q', correct: true, note: 'mock' }],
+      vocabularyHighlights: [],
+      summaryFeedback: 'mock — covers the main idea',
+    };
+  },
+
+  'journal-analysis': (messages) => {
+    const text = findTranscript(messages);
+    return {
+      grammarErrors: fossilisedToErrors(text), vocabularyNotes: [], expressionNotes: [],
+      naturalnessNotes: [], recurringPatterns: [], newWordsWorthLearning: [],
+      improvedParagraph: null,
+    };
+  },
+
+  'tamil-to-english': (messages) => {
+    const text = findTranscript(messages);
+    return {
+      literalBasic: text, natural: text, professional: text, formal: null,
+      grammarErrors: fossilisedToErrors(text), notes: ['mock'], keyDifference: 'mock — register',
+    };
+  },
+
+  'register-evaluation': () => ({
+    registerFit: { score: 50, evidence: 'mock provider — no model judgement' },
+    detectedRegister: 'neutral',
+    meaningPreserved: { value: true, reason: 'mock' },
+    grammarErrors: [],
+    modelVersion: 'mock model version', oneAdjustment: 'mock — tighten formality',
+  }),
   'session-summary': () => ({
     whatYouDid: 'You completed a practice session.',
     whatImproved: 'no comparison data yet',

@@ -181,6 +181,16 @@ export const RoleplayTurnSchema = z.object({
 });
 export type RoleplayTurn = z.infer<typeof RoleplayTurnSchema>;
 
+export const RegisterEvaluationSchema = z.object({
+  registerFit: Scored,
+  detectedRegister: z.string(),
+  meaningPreserved: z.object({ value: z.boolean(), reason: z.string() }),
+  grammarErrors: z.array(GrammarErrorSchema),
+  modelVersion: z.string(),
+  oneAdjustment: z.string(),
+});
+export type RegisterEvaluation = z.infer<typeof RegisterEvaluationSchema>;
+
 export const TamilToEnglishSchema = z.object({
   literalBasic: z.string(),
   natural: z.string(),
