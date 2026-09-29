@@ -1,7 +1,7 @@
-import { and, desc, eq, gte, inArray } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import {
-  learnerSkillStates, mistakePatterns, mistakeOccurrences, skillDefinitions, learningSessions,
+  learnerSkillStates, learnerVocabulary, mistakePatterns, mistakeOccurrences, mistakeReviews, cefrEstimates, skillDefinitions, learningSessions, exerciseAttempts, writingSubmissions, speechMetrics,
 } from '@/lib/db/schema';
 
 const DAY_MS = 86_400_000;
@@ -23,8 +23,90 @@ export function computeStreak(activityDates: string[], today: string): number {
   return streak;
 }
 
+const RANGE_DAYS: Record<string, number> = { '7d': 7, '30d': 30, '90d': 90, '6m': 180, all: 3650 };
+
+const bucketKey = (d: Date, weekly: boolean): string => {
+  if (!weekly) return d.toISOString().slice(0, 10);
+  const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); // Monday
+  return x.toISOString().slice(0, 10);
+};
+
 export class ProgressService {
   constructor(private db: Db) {}
+
+  /** §60/§89 — bucketed series from stored rows only; gaps stay empty. */
+  async timeseries(userId: string, range: '7d' | '30d' | '90d' | '6m' | 'all' = '30d') {
+    const days = RANGE_DAYS[range] ?? 30;
+    const weekly = days > 30;
+    const since = new Date(Date.now() - days * DAY_MS);
+
+    const [sessions, attempts, writes, occs, reviews, vocabRows, cefrRows] = await Promise.all([
+      this.db.query.learningSessions.findMany({
+        where: and(eq(learningSessions.learnerId, userId), gte(learningSessions.createdAt, since)),
+        columns: { id: true, createdAt: true, durationSeconds: true, sessionType: true }, limit: 2000,
+      }),
+      this.db.query.exerciseAttempts.findMany({
+        where: and(eq(exerciseAttempts.learnerId, userId), gte(exerciseAttempts.createdAt, since)),
+        columns: { createdAt: true, score: true }, limit: 2000,
+      }),
+      this.db.query.writingSubmissions.findMany({
+        where: and(eq(writingSubmissions.learnerId, userId), gte(writingSubmissions.createdAt, since)),
+        columns: { createdAt: true, scores: true }, limit: 500,
+      }),
+      this.db.select({ detectedAt: mistakeOccurrences.detectedAt }).from(mistakeOccurrences)
+        .innerJoin(mistakePatterns, eq(mistakeOccurrences.mistakePatternId, mistakePatterns.id))
+        .where(and(eq(mistakePatterns.learnerId, userId), gte(mistakeOccurrences.detectedAt, since))).limit(2000),
+      this.db.select({ reviewedAt: mistakeReviews.reviewedAt }).from(mistakeReviews)
+        .innerJoin(mistakePatterns, eq(mistakeReviews.mistakePatternId, mistakePatterns.id))
+        .where(and(eq(mistakePatterns.learnerId, userId), gte(mistakeReviews.reviewedAt, since))).limit(2000),
+      this.db.query.learnerVocabulary.findMany({
+        where: and(eq(learnerVocabulary.learnerId, userId), inArray(learnerVocabulary.status, ['practising', 'stable', 'mastered'])),
+        columns: { createdAt: true, status: true }, limit: 3000,
+      }),
+      this.db.query.cefrEstimates.findMany({
+        where: eq(cefrEstimates.learnerId, userId), orderBy: asc(cefrEstimates.createdAt), limit: 60,
+      }),
+    ]);
+    const sessIds = new Set(sessions.map((s) => s.id));
+    const metrics = (await this.db.query.speechMetrics.findMany({ limit: 5000 }))
+      .filter((m) => m.sessionId && sessIds.has(m.sessionId));
+
+    const buckets = new Map<string, {
+      speakingSec: number; words: number; fillers: number; mistakes: number;
+      reviews: number; scores: number[]; vocabActive: number; practised: boolean;
+    }>();
+    const b = (d: Date) => {
+      const k = bucketKey(d, weekly);
+      if (!buckets.has(k)) buckets.set(k, { speakingSec: 0, words: 0, fillers: 0, mistakes: 0, reviews: 0, scores: [], vocabActive: 0, practised: false });
+      return buckets.get(k)!;
+    };
+    const sessBucket = new Map(sessions.map((s) => [s.id, s]));
+    for (const s of sessions) { const x = b(s.createdAt); x.practised = true; x.speakingSec += s.durationSeconds ?? 0; }
+    for (const m of metrics) {
+      const s = sessBucket.get(m.sessionId!); if (!s) continue;
+      const x = b(s.createdAt); x.words += m.wordCount ?? 0; x.fillers += m.fillerCount ?? 0;
+    }
+    for (const a of attempts) { const t = (a.score as { total?: number } | null)?.total; if (t != null) b(a.createdAt).scores.push(t); }
+    for (const w of writes) { const t = (w.scores as { total?: number } | null)?.total; if (t != null) b(w.createdAt).scores.push(t); }
+    for (const o of occs) b(o.detectedAt).mistakes++;
+    for (const r of reviews) b(r.reviewedAt).reviews++;
+    for (const v of vocabRows) b(v.createdAt).vocabActive++;
+
+    const series = [...buckets].sort(([a], [c]) => a.localeCompare(c)).map(([key, x]) => ({
+      key,
+      speakingMinutes: +(x.speakingSec / 60).toFixed(1),
+      fillerRatePer100: x.words ? +((x.fillers / x.words) * 100).toFixed(1) : null,
+      avgScore: x.scores.length ? +(x.scores.reduce((a, c) => a + c, 0) / x.scores.length).toFixed(1) : null,
+      mistakesDetected: x.mistakes, reviewsDone: x.reviews, vocabActive: x.vocabActive,
+      practised: x.practised,
+    }));
+    return {
+      range, buckets: series,
+      streakDays: sessions.length ? computeStreak(sessions.map((s) => s.createdAt.toISOString().slice(0, 10)), new Date().toISOString().slice(0, 10)) : 0,
+      cefrHistory: cefrRows.map((c) => ({ at: c.createdAt.toISOString().slice(0, 10), level: c.level, confidence: c.confidence })),
+      skillRadar: await this.skillRadar(userId),
+    };
+  }
 
   async streak(userId: string) {
     const sessions = await this.db.query.learningSessions.findMany({
