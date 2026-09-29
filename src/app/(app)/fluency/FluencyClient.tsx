@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { EvaluationPanel } from '@/components/voice/EvaluationPanel';
 import { RecorderControls } from '@/components/voice/RecorderControls';
+import { usePlanItem } from '@/hooks/usePlanItem';
 import { ScoreCard } from '@/components/voice/ScoreCard';
 import { useRecorder } from '@/hooks/useRecorder';
 import { PRECISION_MAP } from '@/content/precision';
@@ -89,6 +90,7 @@ export function FluencyClient() {
   const [error, setError] = useState<string | null>(null);
   const [bests, setBests] = useState<Record<string, number>>({});
   const recorder = useRecorder();
+  const markPlanDone = usePlanItem();
 
   useEffect(() => {
     fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'fluency' }) })
@@ -119,6 +121,7 @@ export function FluencyClient() {
       if (!evRes.ok) { setError('Evaluation failed.'); return; }
       setResult({ transcript: data.learnerTurn.text, ...ev });
       setMetrics(ev.metrics);
+      void markPlanDone();
       const score = ev.scores?.fluency?.total ?? 0;
       fetch('/api/exercise-attempts', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -130,7 +133,7 @@ export function FluencyClient() {
     } finally {
       setBusy(false);
     }
-  }, [sessionId, ex, prompt]);
+  }, [sessionId, ex, prompt, markPlanDone]);
 
   const feedback = useMemo(() => {
     if (!ex || !metrics) return null;

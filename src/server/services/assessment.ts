@@ -22,7 +22,6 @@ import { ensurePromptVersion } from './prompt-version';
 import { CurriculumService } from './curriculum';
 
 const OBJECTIVE_TYPES = new Set(['mcq', 'cloze', 'listening_mcq', 'dictation']);
-const OPEN_TYPES = new Set(['short', 'writing']);
 const SPEAKING_TYPES = new Set(['speaking', 'conversation', 'roleplay', 'pronunciation']);
 
 type Domain = 'speaking' | 'listening' | 'reading' | 'writing' | 'grammar' | 'vocabulary';

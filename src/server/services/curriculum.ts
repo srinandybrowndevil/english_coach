@@ -1,14 +1,13 @@
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import {
   curriculumPlans, dailyPlanItems, dailyPlans, learnerProfiles, learnerSkillStates,
-  skillDefinitions, skillPrerequisites,
 } from '@/lib/db/schema';
 import type { AssessmentItem } from '@/content/assessment';
 import type { AssessmentItemGrade } from '@/lib/evaluation/schemas';
 import type { Candidate } from '@/lib/learning/planner';
 import { buildDailyPlan } from '@/lib/learning/planner';
-import { newSkillState, prerequisitesReady, updateSkillState, type SkillState } from '@/lib/learning/skills';
+import { prerequisitesReady, updateSkillState, type SkillState } from '@/lib/learning/skills';
 import { MistakeService } from './mistake';
 import { VocabularyService } from './vocabulary';
 
@@ -50,7 +49,6 @@ export class CurriculumService {
       }
     }
 
-    const slugById = new Map(defs.map((d) => [d.id, d.slug]));
     const touched = new Set<string>();
     for (const { item, grade } of graded) {
       if (!grade) continue;
@@ -180,18 +178,24 @@ export class CurriculumService {
         payload: { vocabId: v.id },
       });
     }
-    const sortedStates = [...states].sort((a, b) => a.masteryScore - b.masteryScore);
-    for (const st of sortedStates.slice(0, 12)) {
-      const def = defById.get(st.skillId);
-      if (!def) continue;
+    // fresh learners have no state rows yet — plan from definitions at mastery 0
+    const skillPool: { def: (typeof defs)[number]; mastery: number; nextReviewAt: Date | null; lastPractisedAt: Date | null }[] =
+      states.length
+        ? [...states]
+            .sort((a, b) => a.masteryScore - b.masteryScore)
+            .slice(0, 12)
+            .map((st) => ({ def: defById.get(st.skillId)!, mastery: st.masteryScore, nextReviewAt: st.nextReviewAt, lastPractisedAt: st.lastPractisedAt }))
+            .filter((x) => x.def)
+        : defs.slice(0, 12).map((def) => ({ def, mastery: 0, nextReviewAt: null, lastPractisedAt: null }));
+    for (const { def, mastery, nextReviewAt, lastPractisedAt } of skillPool) {
       const base = ROUTE_BY_DOMAIN[def.domain] ?? '/tutor';
       candidates.push({
         id: `skill:${def.slug}`, domain: def.domain, kind: 'lesson', estMinutes: 6,
-        weakness: 1 - st.masteryScore / 100, importance: def.importance,
+        weakness: 1 - mastery / 100, importance: def.importance,
         recurrence: 0,
-        reviewDueHours: st.nextReviewAt ? (st.nextReviewAt.getTime() - now.getTime()) / 3_600_000 : 9999,
+        reviewDueHours: nextReviewAt ? (nextReviewAt.getTime() - now.getTime()) / 3_600_000 : 9999,
         goalRelevance: 0.7,
-        hoursSinceLastPractised: st.lastPractisedAt ? (now.getTime() - st.lastPractisedAt.getTime()) / 3_600_000 : 168,
+        hoursSinceLastPractised: lastPractisedAt ? (now.getTime() - lastPractisedAt.getTime()) / 3_600_000 : 168,
         prerequisitesReady: true,
         moduleRoute: `${base}?plan=`,
         title: `${def.name}`,

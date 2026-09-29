@@ -7,12 +7,12 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 0 | Your role | Not started | No | No | — | — |  |
 | 1 | Non-negotiable product principles | Implemented (private app, allowlist, no public signup) | Yes | Yes | src/app/api/auth/*, src/proxy.ts | — | Phase 1 |
 | 2 | Primary outcome | Not started | No | No | — | — |  |
-| 3 | User model | Partial (learner_profiles columns only) | No | No | src/lib/db/schema/core.ts | — | Phase 1 |
+| 3 | User model | Implemented | Yes | Yes | src/lib/db/schema/core.ts, src/app/(app)/onboarding | tests/integration/assessment.test.ts | Phase 4 — profile jsonb columns, onboarding sets goals/context |
 | 4 | Application form | Not started | No | No | — | — |  |
 | 5 | Recommended technical architecture | Implemented (stack + provider abstraction + private auth) | No | No | src/lib/ai/*, docs/ai-system.md | — | Phase 1 |
 | 6 | System architecture | Not started | No | No | — | — |  |
 | 7 | Main navigation | Partial (nav structure only) | No | No | src/app/(app)/layout.tsx | — | Phase 1 |
-| 8 | Page: Home | Not started | No | No | — | — |  |
+| 8 | Page: Home | Implemented | Yes | Yes | src/app/(app)/page.tsx, src/server/services/progress.ts | tests/unit/learning/streak.test.ts | Phase 4 — real dashboard, skill radar, streak, improvement (null-safe) |
 | 9 | Page: My Tutor | Implemented | Yes | Pending UI polish | src/app/(app)/tutor/, src/server/services/tutor.ts | tests/integration/conversation.test.ts | Phase 3 — all 10 modes, voice+text, insight panel |
 | 10 | Page: Speak | Implemented | Yes | Pending UI polish | src/app/(app)/speak/, src/app/api/turns/[id]/evaluate | tests/unit/evaluation/schemas.test.ts | Phase 3 — 10 modes incl. picture description; rapid/timed auto-stop |
 | 11 | Page: Pronunciation | Partial (content/logic) | No | Pending UI | src/content/pronunciation.ts | — | Phase 2 |
@@ -41,8 +41,8 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 34 | Conversation recovery training | Partial (content/logic) | No | Pending UI | src/content/recovery.ts | — | Phase 2 |
 | 35 | Precision English | Partial (content/logic) | No | Pending UI | src/content/precision.ts | — | Phase 2 |
 | 36 | Journal | Not started | No | No | — | — |  |
-| 37 | Daily training engine | Implemented | Yes | Pending UI | src/lib/learning/planner.ts | tests/unit/learning/skills-planner.test.ts | Phase 2 |
-| 38 | Curriculum engine | Implemented | Yes | Pending UI | src/lib/learning/skills.ts, src/content/skills.ts | tests/unit/learning/skills-planner.test.ts | Phase 2 |
+| 37 | Daily training engine | Implemented | Yes | Yes | src/server/services/curriculum.ts, src/app/(app)/daily | tests/integration/assessment.test.ts | Phase 4 — daily plan engine + runner + summary |
+| 38 | Curriculum engine | Implemented | Yes | Yes | src/server/services/curriculum.ts | tests/integration/assessment.test.ts | Phase 4 — skill state seeding + curriculum_plans ordering |
 | 39 | Adaptive planning algorithm | Implemented | Yes | Pending UI | src/lib/learning/planner.ts | tests/unit/learning/skills-planner.test.ts | Phase 2 |
 | 40 | Spaced repetition | Implemented | Yes | Pending UI | src/lib/learning/srs.ts | tests/unit/learning/srs.test.ts | Phase 2 |
 | 41 | Mistake memory engine | Implemented | Yes | Pending UI | src/lib/memory/mistakes.ts | tests/unit/memory/mistakes.test.ts | Phase 2 |
@@ -61,9 +61,9 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 54 | Writing score | Implemented | Yes | Pending UI | src/lib/scoring/writing.ts | tests/unit/scoring/grammar-pronunciation.test.ts | Phase 2 |
 | 55 | Negotiation score | Implemented | Yes | Pending UI | src/lib/scoring/negotiation.ts | tests/unit/scoring/grammar-pronunciation.test.ts | Phase 2 |
 | 56 | Presentation score | Implemented | Yes | Pending UI | src/lib/scoring/presentation.ts | tests/unit/scoring/grammar-pronunciation.test.ts | Phase 2 |
-| 57 | CEFR estimation | Implemented | Yes | Pending UI | src/lib/scoring/cefr.ts | tests/unit/scoring/grammar-pronunciation.test.ts | Phase 2 |
-| 58 | Initial assessment | Not started | No | No | — | — |  |
-| 59 | Monthly assessment | Not started | No | No | — | — |  |
+| 57 | CEFR estimation | Implemented | Yes | Yes | src/server/services/assessment.ts, cefr_estimates | tests/integration/assessment.test.ts | deterministic gate authoritative over LLM band |
+| 58 | Initial assessment | Implemented | Yes | Yes | src/content/assessment.ts, src/app/(app)/assessment/[kind] | tests/integration/assessment.test.ts | 12-section runner, resume, hidden grades until finish |
+| 59 | Monthly assessment | Implemented | Yes | Yes | selectItems monthIndex rotation | tests/unit/content/assessment-select.test.ts | ≥2 variants per group, deterministic rotation |
 | 60 | Progress page | Not started | No | No | — | — |  |
 | 61 | Weekly report | Not started | No | No | — | — |  |
 | 62 | Monthly report | Not started | No | No | — | — |  |
@@ -82,15 +82,15 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 75 | Failure behaviour | Implemented | Yes | Partial | src/app/api/sessions/[id]/turn, src/hooks/usePendingTurn.ts | tests/integration/* | stt_failed/tutor_failed/evaluation_status=failed paths; IndexedDB pending-turn restore |
 | 76 | Repository structure | Implemented | No | No | repository root | — | Phase 1 |
 | 77 | Seed content | Implemented | Yes | Pending UI | src/lib/db/seed.ts, src/content/* | tests/integration/seed.test.ts | Phase 2 |
-| 78 | Required workflows | Not started | No | No | — | — |  |
+| 78 | Required workflows | Implemented | Yes | Yes | src/app/(app)/onboarding, src/app/(app)/daily | tests/integration/assessment.test.ts | Workflow A + B implemented |
 | 79 | Session summary | Implemented | Yes | Yes | src/server/services/session.ts, src/app/(app)/sessions/[id] | tests/integration/conversation.test.ts | Phase 3 — SessionSummarySchema on overall_summary |
-| 80 | Gamification | Not started | No | No | — | — |  |
+| 80 | Gamification | Implemented | Yes | Yes | src/server/services/progress.ts | tests/unit/learning/streak.test.ts | streak + minutes only; no coins/leaderboards |
 | 81 | Required test strategy | Not started | No | No | — | — |  |
 | 82 | Critical unit tests | Implemented | Yes | Yes | tests/unit/*, tests/fixtures/* | vitest 100+ tests | Phase 2 — engines tested; UI paths pending |
 | 83 | Critical integration tests | Not started | No | No | — | — |  |
 | 84 | End-to-end tests | Not started | No | No | — | — |  |
 | 85 | AI quality tests | Not started | No | No | — | — |  |
-| 86 | No fake demo data | Not started | No | No | — | — |  |
+| 86 | No fake demo data | Implemented | Yes | Yes | src/app/(app)/page.tsx, src/server/services/progress.ts | tests/integration/assessment.test.ts | null when <2 sessions/window; empty states everywhere |
 | 87 | Quality gates | Not started | No | No | — | — |  |
 | 88 | Browser QA | Not started | No | No | — | — |  |
 | 89 | Performance | Not started | No | No | — | — |  |

@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { EvaluationPanel } from '@/components/voice/EvaluationPanel';
 import { RecorderControls } from '@/components/voice/RecorderControls';
+import { usePlanItem } from '@/hooks/usePlanItem';
 import { useRecorder } from '@/hooks/useRecorder';
 import { DEBATE_TOPICS } from '@/content/debate-topics';
 import { PRESENTATION_TOPICS } from '@/content/presentation-topics';
@@ -48,6 +49,7 @@ export function SpeakClient() {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [englishOnly, setEnglishOnly] = useState(false);
   const recorder = useRecorder();
+  const markPlanDone = usePlanItem();
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const modeDef = MODES.find((m) => m.id === mode)!;
@@ -96,13 +98,14 @@ export function SpeakClient() {
       if (!evRes.ok) { setError('Evaluation failed — retry the analysis.'); return; }
       setResult({ transcript: data.learnerTurn.text, ...ev });
       setLastMetrics(ev.metrics);
+      void markPlanDone();
       if (mode === 'rapid' && rapidIdx < RAPID_QUESTIONS.length - 1) setRapidIdx(rapidIdx + 1);
     } catch {
       setError('Network error — your recording may not have uploaded; try again.');
     } finally {
       setBusy(false);
     }
-  }, [sessionId, prompt, imageDataUrl, mode, rapidIdx]);
+  }, [sessionId, prompt, imageDataUrl, mode, rapidIdx, markPlanDone]);
 
   return (
     <div className="mt-6 flex flex-col gap-6">

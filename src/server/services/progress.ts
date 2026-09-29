@@ -1,8 +1,7 @@
 import { and, desc, eq, gte, inArray } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import {
-  learnerSkillStates, mistakePatterns, sessionTurns, skillDefinitions, speechMetrics,
-  learningSessions,
+  learnerSkillStates, mistakePatterns, skillDefinitions, learningSessions,
 } from '@/lib/db/schema';
 
 const DAY_MS = 86_400_000;

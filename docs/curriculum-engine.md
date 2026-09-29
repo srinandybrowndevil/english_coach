@@ -67,3 +67,28 @@ business | negotiation | simulator; simulator hidden scripts are stored under
 
 Seeder: `pnpm db:seed` → `src/lib/db/seed.ts` (`seedContent(db)` is injectable
 for tests). Upserts by slug; idempotent — see `tests/integration/seed.test.ts`.
+
+## Assessment → skills → plan (Phase 4, §58→§38→§37)
+
+1. **Assess** — `AssessmentService` runs the §58 item bank (`src/content/assessment.ts`,
+   `selectItems` rotates variants by `monthIndex` so monthly stays comparable).
+   Objective items grade locally; open items → `ASSESSMENT_GRADER_SYSTEM`;
+   spoken items persist a turn and run `EvaluationService.evaluateTurn`
+   (`context: assessment:<section>`); pronunciation items add
+   `PRONUNCIATION_NOTES_SYSTEM` notes (confidence-capped, §52).
+2. **Estimate** — `finish()` aggregates per domain, calls
+   `CEFR_DOMAIN_JUDGEMENT_SYSTEM` per domain with evidence, then
+   `estimateCefr` (deterministic gate is authoritative). Writes
+   `cefr_estimates` + `assessments.result` (all §58 fields).
+3. **Seed skill states** — `CurriculumService.initialiseFromAssessment` creates
+   `learner_skill_states` rows for every seeded skill, applies
+   `updateSkillState(correct = grade.correct || score ≥ 60)` per item skill,
+   orders the graph by `computePriority`, writes `curriculum_plans`
+   (`plan.orderedSkillSlugs`) and profile `currentLevel`/`weakSkills`/
+   `strongSkills`/`skillMasteryMap`.
+4. **Daily plan** — `generateDailyPlan` builds candidates: due mistakes
+   (review, 2m), due vocabulary (review, 1m), weak skills (lesson, 6m, routed by
+   domain), one conversation (10m), one scenario (10m) → `buildDailyPlan`
+   (domain ≤40%, review ≤25% first-pick, conversation-first) → `daily_plans` +
+   `daily_plan_items` (unique per learner+date; regenerates when minutes change).
+   Modules PATCH `/api/daily/items/:id` when their exercise finishes.

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { RecorderControls } from '@/components/voice/RecorderControls';
 import { TranscriptView, type Turn } from '@/components/voice/TranscriptView';
 import { usePendingTurn } from '@/hooks/usePendingTurn';
+import { usePlanItem } from '@/hooks/usePlanItem';
 import { useRecorder } from '@/hooks/useRecorder';
 import { useTts } from '@/hooks/useTts';
 import { TUTOR_MODES, type CorrectionMode, type TutorMode } from '@/lib/ai/prompts/tutor';
@@ -26,6 +27,7 @@ export function TutorClient() {
   const [insight, setInsight] = useState<Insight | null>(null);
   const [text, setText] = useState('');
   const recorder = useRecorder();
+  const markPlanDone = usePlanItem();
   const tts = useTts();
   const pending = usePendingTurn(sessionId);
   const recordingStartRef = useRef(0);
@@ -80,6 +82,7 @@ export function TutorClient() {
 
   const endSession = async () => {
     if (!sessionId) return;
+    void markPlanDone();
     const res = await fetch(`/api/sessions/${sessionId}/end`, { method: 'POST' });
     const data = await res.json();
     setSummary(data.summary);
