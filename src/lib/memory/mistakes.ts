@@ -82,11 +82,13 @@ export function applyOccurrence(
   s.lastSeenAt = ev.at;
   if (!s.contextsSeen.includes(ev.context)) s.contextsSeen.push(ev.context);
 
-  // status transitions on recurrence
+  // status transitions on recurrence — a relapsed pattern must re-earn mastery
   if (s.status === 'new') s.status = 'recurring';
   else if (s.status === 'mastered' || s.status === 'monitoring') s.status = 'relapsed';
   else if (s.status === 'improving') s.status = 'recurring';
   // 'relapsed'/'recurring' stay as-is
+  s.reviewStreak = 0;
+  s.monitoringSince = undefined;
 
   // re-enter review at the front of the ladder
   s.intervalIndex = 0;

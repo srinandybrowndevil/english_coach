@@ -351,10 +351,13 @@ CREATE TABLE "learning_sessions" (
 	"learner_id" uuid NOT NULL,
 	"session_type" text NOT NULL,
 	"tutor_mode" text,
+	"correction_mode" text,
+	"session_goal" text,
+	"difficulty" integer,
 	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"ended_at" timestamp with time zone,
 	"duration_seconds" integer,
-	"overall_summary" text,
+	"overall_summary" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -385,6 +388,10 @@ CREATE TABLE "session_turns" (
 	"role" text NOT NULL,
 	"content" text NOT NULL,
 	"audio_path" text,
+	"words" jsonb,
+	"metrics" jsonb,
+	"evaluation" jsonb,
+	"evaluation_status" text DEFAULT 'pending' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint

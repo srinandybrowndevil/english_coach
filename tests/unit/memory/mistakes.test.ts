@@ -56,6 +56,20 @@ describe('applyReview mastery gates', () => {
     expect(s.status).toBe('mastered');
   });
 
+  it('relapsed pattern must re-earn mastery: occurrence resets streak', () => {
+    let s = fresh();
+    s = applyReview(s, { success: true, context: 'speaking', at: d(1) });
+    s = applyReview(s, { success: true, context: 'writing', at: d(2) });
+    s = applyReview(s, { success: true, context: 'speaking', at: d(5) });
+    s = applyReview(s, { success: true, context: 'writing', at: d(13) });
+    expect(s.status).toBe('mastered');
+    const r = applyOccurrence(s, { context: 'negotiation', at: d(20) })!;
+    expect(r.reviewStreak).toBe(0);
+    expect(r.monitoringSince).toBeUndefined();
+    const one = applyReview(r, { success: true, context: 'writing', at: d(21) });
+    expect(one.status).toBe('improving'); // not monitoring
+  });
+
   it('mastered + new occurrence → relapsed, same signature, count up', () => {
     let s = fresh();
     s = applyReview(s, { success: true, context: 'speaking', at: d(1) });

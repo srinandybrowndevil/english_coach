@@ -8,6 +8,11 @@ export type AIEvent = {
   kind: string;
   ms: number;
   error?: string;
+  // §67 evidence fields (optional — set by evaluator paths)
+  evaluatorVersion?: string;
+  promptVersionId?: string;
+  confidence?: string;
+  inputEvidence?: unknown;
 } & TokenUsage;
 
 /** Best-effort usage logging for the §74 cost dashboard. Never throws. */
@@ -22,6 +27,10 @@ export function recordAIEvent(e: AIEvent): void {
         outputTokens: e.outputTokens,
         ms: e.ms,
         error: e.error,
+        evaluatorVersion: e.evaluatorVersion,
+        promptVersionId: e.promptVersionId,
+        confidence: e.confidence,
+        inputEvidence: e.inputEvidence as never,
       }),
     )
     .catch((err) => console.warn('[ai] usage event write failed:', err));

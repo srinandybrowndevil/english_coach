@@ -1,5 +1,5 @@
 {
-  "id": "5b773db2-a664-43f3-a498-d00582318352",
+  "id": "1adc4c02-e7ad-4f2c-87ef-addd716654a6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -3047,6 +3047,24 @@
           "primaryKey": false,
           "notNull": false
         },
+        "correction_mode": {
+          "name": "correction_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "session_goal": {
+          "name": "session_goal",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "started_at": {
           "name": "started_at",
           "type": "timestamp with time zone",
@@ -3068,7 +3086,7 @@
         },
         "overall_summary": {
           "name": "overall_summary",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         },
@@ -3345,6 +3363,31 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "words": {
+          "name": "words",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metrics": {
+          "name": "metrics",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "evaluation": {
+          "name": "evaluation",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "evaluation_status": {
+          "name": "evaluation_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
         },
         "created_at": {
           "name": "created_at",

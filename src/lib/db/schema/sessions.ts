@@ -12,10 +12,13 @@ export const learningSessions = pgTable(
       .references(() => users.id, { onDelete: 'cascade' }),
     sessionType: text('session_type').notNull(),
     tutorMode: text('tutor_mode'),
+    correctionMode: text('correction_mode'),
+    sessionGoal: text('session_goal'),
+    difficulty: integer('difficulty'),
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
     endedAt: timestamp('ended_at', { withTimezone: true }),
     durationSeconds: integer('duration_seconds'),
-    overallSummary: text('overall_summary'),
+    overallSummary: jsonb('overall_summary'), // §79 SessionSummary
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('learning_sessions_learner_idx').on(t.learnerId)],
@@ -31,6 +34,10 @@ export const sessionTurns = pgTable(
     role: text('role').notNull(), // learner | tutor | system
     content: text('content').notNull(),
     audioPath: text('audio_path'),
+    words: jsonb('words'), // word timings for learner turns
+    metrics: jsonb('metrics'), // §49 SpeechMetrics snapshot
+    evaluation: jsonb('evaluation'), // {evaluation, scores} from §50 evaluator
+    evaluationStatus: text('evaluation_status').notNull().default('pending'), // pending | done | failed | none
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index('session_turns_session_idx').on(t.sessionId)],

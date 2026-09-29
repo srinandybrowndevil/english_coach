@@ -159,3 +159,35 @@ export const CefrDomainJudgementSchema = z.object({
   evidence: z.string(),
 });
 export type CefrDomainJudgement = z.infer<typeof CefrDomainJudgementSchema>;
+
+export const SessionSummarySchema = z.object({
+  whatYouDid: z.string(),
+  whatImproved: z.string(),
+  topMistakes: z
+    .array(z.object({ rule: z.string(), quote: z.string(), correction: z.string() }))
+    .max(3),
+  bestSentence: z.string().nullable(),
+  upgradedExpression: z.object({ original: z.string(), upgraded: z.string() }).nullable(),
+  vocabularyLearned: z.array(z.string()),
+  practiceScheduled: z.array(z.string()),
+  nextRecommendedActivity: z.string(),
+});
+export type SessionSummary = z.infer<typeof SessionSummarySchema>;
+
+export const RoleplayTurnSchema = z.object({
+  reply: z.string(),
+  ended: z.boolean(),
+  internalNote: z.string(),
+});
+export type RoleplayTurn = z.infer<typeof RoleplayTurnSchema>;
+
+export const TamilToEnglishSchema = z.object({
+  literalBasic: z.string(),
+  natural: z.string(),
+  professional: z.string(),
+  formal: z.string().nullable(),
+  grammarErrors: z.array(GrammarErrorSchema),
+  notes: z.array(z.string()),
+  keyDifference: z.string(),
+});
+export type TamilToEnglish = z.infer<typeof TamilToEnglishSchema>;
