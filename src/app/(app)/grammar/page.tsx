@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 import { requireSession } from '@/lib/auth/session';
 import { getDb } from '@/lib/db/client';
-import { contentItems, learnerSkillStates, mistakePatterns, skillDefinitions } from '@/lib/db/schema';
+import { contentItems, learnerSkillStates, mistakePatterns } from '@/lib/db/schema';
 import { ruleIdsForLesson } from '@/content/lesson-rules';
 
 export const metadata = { title: 'Grammar' };

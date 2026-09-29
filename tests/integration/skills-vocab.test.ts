@@ -26,7 +26,7 @@ describe('grammar quiz → skill state + exercise_attempts (§17)', () => {
   it('recordSkillAttempt updates learner_skill_states and writes an attempt', async () => {
     const db = await testDb();
     const [u] = await db.insert(users).values({ email: 'learner@example.com' }).returning();
-    const [def] = await db.insert(skillDefinitions).values({
+    await db.insert(skillDefinitions).values({
       slug: 'past-simple', domain: 'grammar', name: 'Past simple', description: 'x', cefrRelevance: 'a2',
     }).returning();
     const svc = new CurriculumService(db);
