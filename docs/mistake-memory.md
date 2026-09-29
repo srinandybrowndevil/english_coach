@@ -5,10 +5,15 @@ Persistence: `mistake_patterns`, `mistake_occurrences`, `mistake_reviews`.
 
 ## Canonical signatures
 
-`buildSignature({domain, subcategory, rule})` → lowercase kebab joined by `:`,
-e.g. `grammar:past-tense:did-plus-past-form`. The signature is derived from the
-canonical rule — never from the learner's sentence — so occurrences dedupe via
-the `UNIQUE(learner_id, error_signature)` constraint.
+`buildSignature({domain, rule})` → `${domain}:${rule}` lowercase kebab,
+e.g. `grammar:did-plus-past-form` (Phase 5 — subcategory is descriptive metadata
+on the row, never part of the signature; this fixed the signature-drift bug where
+`grammar:past-tense-auxiliary-did:…` and `grammar:past-tense:…` coexisted).
+`src/lib/memory/rules.ts` (`CANONICAL_RULES` + `normaliseRule`) is the single
+source of truth mapping aliases (e.g. `verb-complementation`) → canonical ids;
+both the fossilised detectors and LLM errors pass through it in
+`MistakeService.mergeDetections`. Migration `0002` adds `label`; legacy
+duplicates are merged by `pnpm db:repair-signatures` (idempotent).
 
 ## State
 

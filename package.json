@@ -14,7 +14,7 @@
     "db:migrate": "drizzle-kit migrate",
     "test:e2e": "playwright test",
     "db:seed": "tsx --env-file=.env.local src/lib/db/seed.ts",
-    "db:repair-signatures": "tsx src/lib/db/repair-signatures.ts"
+    "db:repair-signatures": "tsx --env-file=.env.local src/lib/db/repair-signatures.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",

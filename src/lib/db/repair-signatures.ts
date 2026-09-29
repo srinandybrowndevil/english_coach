@@ -67,7 +67,8 @@ export async function repairSignatures(dbParam?: Db) {
   return { patterns: rows.length, merged, rewritten };
 }
 
-if (import.meta.url === `file://${process.argv[1]?.replace(/\\/g, '/')}`) {
+// tsx runs scripts as CJS — import.meta.url is unreliable; match argv instead.
+if (process.argv[1]?.endsWith('repair-signatures.ts')) {
   repairSignatures().then((r) => { console.log('repair-signatures:', r); process.exit(0); })
     .catch((e) => { console.error(e); process.exit(1); });
 }

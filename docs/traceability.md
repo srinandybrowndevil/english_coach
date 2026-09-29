@@ -15,19 +15,19 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 8 | Page: Home | Implemented | Yes | Yes | src/app/(app)/page.tsx, src/server/services/progress.ts | tests/unit/learning/streak.test.ts | Phase 4 — real dashboard, skill radar, streak, improvement (null-safe) |
 | 9 | Page: My Tutor | Implemented | Yes | Pending UI polish | src/app/(app)/tutor/, src/server/services/tutor.ts | tests/integration/conversation.test.ts | Phase 3 — all 10 modes, voice+text, insight panel |
 | 10 | Page: Speak | Implemented | Yes | Pending UI polish | src/app/(app)/speak/, src/app/api/turns/[id]/evaluate | tests/unit/evaluation/schemas.test.ts | Phase 3 — 10 modes incl. picture description; rapid/timed auto-stop |
-| 11 | Page: Pronunciation | Partial (content/logic) | No | Pending UI | src/content/pronunciation.ts | — | Phase 2 |
-| 12 | IPA module | Partial (content/logic) | No | Pending UI | src/content/pronunciation.ts (ipa_modules) | — | Phase 2 |
-| 13 | Page: Tongue Twisters | Partial (content/logic) | No | Pending UI | src/content/tongue-twisters.ts | — | Phase 2 |
+| 11 | Page: Pronunciation | Implemented | Yes | Yes | src/app/(app)/pronunciation/, src/content/pronunciation.ts | tests/unit/pronunciation/word-diff.test.ts | Phase 5C |
+| 12 | IPA module | Implemented | Yes | Yes | src/content/pronunciation.ts (IPA_MODULES), PronunciationClient IPA tab (gated) | — | Phase 5C |
+| 13 | Page: Tongue Twisters | Implemented | Yes | Yes | src/app/(app)/tongue-twisters/ | tests/unit/pronunciation/word-diff.test.ts | Phase 5C |
 | 14 | Page: Fluency | Implemented | Yes | Pending UI polish | src/app/(app)/fluency/, src/app/api/exercise-attempts | — | Phase 3 — 10 drills + personal best in exercise_attempts |
-| 15 | Page: Listening | Not started | No | No | — | — |  |
-| 16 | Shadowing system | Not started | No | No | — | — |  |
-| 17 | Page: Grammar | Partial (content/logic) | No | Pending UI | src/content/grammar-lessons.ts | — | Phase 2 |
-| 18 | Page: Vocabulary | Partial (content/logic) | No | Pending UI | src/content/vocabulary.ts | — | Phase 2 |
-| 19 | Phrasal verb system | Partial (content/logic) | No | Pending UI | src/content/phrasal-verbs.ts | — | Phase 2 |
-| 20 | Idiom system | Partial (content/logic) | No | Pending UI | src/content/idioms.ts | — | Phase 2 |
-| 21 | Collocation system | Partial (content/logic) | No | Pending UI | src/content/collocations.ts | — | Phase 2 |
-| 22 | Modern/Gen-Z English | Partial (content/logic) | No | Pending UI | src/content/modern-english.ts | — | Phase 2 |
-| 23 | Register switching | Partial (content/logic) | No | Pending UI | src/content/register.ts | — | Phase 2 |
+| 15 | Page: Listening | Implemented | Yes | Yes | src/app/(app)/listening/, src/content/listening-scripts.ts | — | Phase 5D |
+| 16 | Shadowing system | Partial | Yes | Yes | ListeningClient shadow block, SHADOWING_SETS | — | Phase 5D (lite: word-diff + listen/record/compare) |
+| 17 | Page: Grammar | Implemented | Yes | Yes | src/app/(app)/grammar/, lesson-rules.ts | tests/integration/skills-vocab.test.ts | Phase 5B |
+| 18 | Page: Vocabulary | Implemented | Yes | Yes | src/app/(app)/vocabulary/ | tests/unit/learning/vocabulary-state.test.ts | Phase 5B |
+| 19 | Phrasal verb system | Implemented | Yes | Yes | VocabBrowser Phrasal Verbs tab, src/content/phrasal-verbs.ts | — | Phase 5B |
+| 20 | Idiom system | Implemented | Yes | Yes | VocabBrowser Idioms tab, src/content/idioms.ts | — | Phase 5B |
+| 21 | Collocation system | Implemented | Yes | Yes | VocabBrowser Collocations tab + detectAwkwardCollocations | tests/unit/vocabulary/collocations.test.ts | Phase 5B |
+| 22 | Modern/Gen-Z English | Implemented | Yes | Yes | VocabBrowser Modern English tab (register caution shown) | — | Phase 5B |
+| 23 | Register switching | Implemented | Yes | Yes | VocabBrowser Register tab (self-marked transforms) | — | Phase 5B |
 | 24 | Page: Reading | Not started | No | No | — | — |  |
 | 25 | Page: Writing | Not started | No | No | — | — |  |
 | 26 | Page: Business English | Partial (content/logic) | No | Pending UI | src/content/scenarios.ts | — | Phase 2 |
@@ -38,15 +38,15 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 31 | Page: Real-Life Simulator | Partial (content/logic) | No | Pending UI | src/content/scenarios.ts | — | Phase 2 |
 | 32 | Tamil -> English lab | Not started | No | No | — | — |  |
 | 33 | Think in English lab | Not started | No | No | — | — |  |
-| 34 | Conversation recovery training | Partial (content/logic) | No | Pending UI | src/content/recovery.ts | — | Phase 2 |
-| 35 | Precision English | Partial (content/logic) | No | Pending UI | src/content/precision.ts | — | Phase 2 |
+| 34 | Conversation recovery training | Implemented | Yes | Yes | VocabBrowser Recovery tab | — | Phase 5B |
+| 35 | Precision English | Implemented | Yes | Yes | VocabBrowser Precision tab | — | Phase 5B |
 | 36 | Journal | Not started | No | No | — | — |  |
 | 37 | Daily training engine | Implemented | Yes | Yes | src/server/services/curriculum.ts, src/app/(app)/daily | tests/integration/assessment.test.ts | Phase 4 — daily plan engine + runner + summary |
 | 38 | Curriculum engine | Implemented | Yes | Yes | src/server/services/curriculum.ts | tests/integration/assessment.test.ts | Phase 4 — skill state seeding + curriculum_plans ordering |
 | 39 | Adaptive planning algorithm | Implemented | Yes | Pending UI | src/lib/learning/planner.ts | tests/unit/learning/skills-planner.test.ts | Phase 2 |
-| 40 | Spaced repetition | Implemented | Yes | Pending UI | src/lib/learning/srs.ts | tests/unit/learning/srs.test.ts | Phase 2 |
-| 41 | Mistake memory engine | Implemented | Yes | Pending UI | src/lib/memory/mistakes.ts | tests/unit/memory/mistakes.test.ts | Phase 2 |
-| 42 | Fossilised error detection | Implemented | Yes | Pending UI | src/lib/memory/fossilised.ts | tests/unit/memory/fossilised.test.ts | Phase 2 |
+| 40 | Spaced repetition | Implemented | Yes | Yes | srs.ts + vocabulary-state.ts + /vocabulary/review | tests/unit/learning/*.test.ts | Phase 5B |
+| 41 | Mistake memory engine | Implemented | Yes | Yes | mistakes.ts + rules.ts + /mistakes Vault | tests/unit/memory/, tests/integration/signature-merge.test.ts | Phase 5A — canonical domain:rule signatures |
+| 42 | Fossilised error detection | Implemented | Yes | Yes | fossilised.ts → CANONICAL_RULES | tests/unit/memory/fossilised.test.ts | Phase 5A |
 | 43 | Tutor memory | Implemented | Yes | Pending UI | src/server/services/memory.ts | tests/integration/conversation.test.ts | Phase 3 — sha256 dedupe, keyword-overlap recall; embeddings deferred |
 | 44 | Voice architecture | Deferred | No | No | docs/voice.md | — | requires provider realtime credentials + ephemeral-token flow; STT/TTS provider interfaces keep it pluggable |
 | 45 | Audio privacy | Implemented | Yes | Yes | src/server/services/speech.ts, src/app/api/audio/[turnId] | tests/integration/audio-retention.test.ts | Phase 3 — retention off/7d/30d, owner-only streaming, purgeExpired |
@@ -82,7 +82,7 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 75 | Failure behaviour | Implemented | Yes | Partial | src/app/api/sessions/[id]/turn, src/hooks/usePendingTurn.ts | tests/integration/* | stt_failed/tutor_failed/evaluation_status=failed paths; IndexedDB pending-turn restore |
 | 76 | Repository structure | Implemented | No | No | repository root | — | Phase 1 |
 | 77 | Seed content | Implemented | Yes | Pending UI | src/lib/db/seed.ts, src/content/* | tests/integration/seed.test.ts | Phase 2 |
-| 78 | Required workflows | Implemented | Yes | Yes | src/app/(app)/onboarding, src/app/(app)/daily | tests/integration/assessment.test.ts | Workflow A + B implemented |
+| 78 | Required workflows | Implemented | Yes | Yes | onboarding,daily,/mistakes vault+review,/grammar,/vocabulary/review | tests/integration/*.ts | A+B Phase 4; D/F Phase 5 |
 | 79 | Session summary | Implemented | Yes | Yes | src/server/services/session.ts, src/app/(app)/sessions/[id] | tests/integration/conversation.test.ts | Phase 3 — SessionSummarySchema on overall_summary |
 | 80 | Gamification | Implemented | Yes | Yes | src/server/services/progress.ts | tests/unit/learning/streak.test.ts | streak + minutes only; no coins/leaderboards |
 | 81 | Required test strategy | Not started | No | No | — | — |  |
