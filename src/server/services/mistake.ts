@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { Db } from '@/lib/db/client';
 import { mistakeOccurrences, mistakePatterns, mistakeReviews, sessionTurns } from '@/lib/db/schema';
 import { detectFossilised } from '@/lib/memory/fossilised';

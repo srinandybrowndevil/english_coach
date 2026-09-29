@@ -58,7 +58,7 @@ export function useRecorder() {
   const silenceMsRef = useRef(0);
   const lastTickRef = useRef(0);
   const autoFinishRef = useRef(autoFinish);
-  autoFinishRef.current = autoFinish;
+  useEffect(() => { autoFinishRef.current = autoFinish; }, [autoFinish]);
   const startedRef = useRef(0);
 
   const cleanup = useCallback(() => {

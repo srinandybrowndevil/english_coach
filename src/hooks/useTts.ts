@@ -1,12 +1,12 @@
 'use client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /** Plays tutor/audio replies; resolves {spoken:false} on failure so UI falls back to text (§75). */
 export function useTts(playbackSpeed = 1) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const speedRef = useRef(playbackSpeed);
-  speedRef.current = playbackSpeed;
+  useEffect(() => { speedRef.current = playbackSpeed; }, [playbackSpeed]);
 
   const stop = useCallback(() => {
     audioRef.current?.pause();

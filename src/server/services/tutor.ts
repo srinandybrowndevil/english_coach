@@ -25,7 +25,7 @@ export class TutorService {
     if (!session) throw new Error(`session ${sessionId} not found`);
     const userId = session.learnerId;
 
-    const [settings, profile, mistakes, vocab, lastSession, memories, turns] = await Promise.all([
+    const [settings, profile, mistakes, vocab, lastSession, , turns] = await Promise.all([
       new SettingsService(this.db).get(userId),
       this.db.query.learnerProfiles.findFirst({ where: eq(learnerProfiles.learnerId, userId) }),
       new MistakeService(this.db).due(userId, 8),

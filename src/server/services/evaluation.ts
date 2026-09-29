@@ -16,7 +16,10 @@ import { VocabularyService } from './vocabulary';
 export class EvaluationService {
   constructor(private db: Db) {}
 
-  async evaluateTurn(turnId: string, opts: { taskPrompt?: string; register?: string; learnerSignatures?: string[] }) {
+  async evaluateTurn(
+    turnId: string,
+    opts: { taskPrompt?: string; register?: string; learnerSignatures?: string[]; imageDataUrl?: string },
+  ) {
     const turn = await this.db.query.sessionTurns.findFirst({ where: eq(sessionTurns.id, turnId) });
     if (!turn) throw new Error(`turn ${turnId} not found`);
 
@@ -33,13 +36,18 @@ export class EvaluationService {
         system: SPEECH_EVALUATOR_SYSTEM, tier: 'balanced',
         messages: [{
           role: 'user',
-          content: [
-            `Task prompt: ${opts.taskPrompt ?? 'free speech'}`,
-            `Expected register: ${opts.register ?? 'neutral'}`,
-            `Transcript: ${turn.content}`,
-            `Speech metrics: ${JSON.stringify(metrics)}`,
-            `Known recurring signatures: ${(opts.learnerSignatures ?? []).join(', ') || 'none'}`,
-          ].join('\n\n'),
+          content: opts.imageDataUrl
+            ? [
+              { type: 'text' as const, text: `Task prompt: ${opts.taskPrompt ?? 'free speech'}\n\nExpected register: ${opts.register ?? 'neutral'}\n\nTranscript: ${turn.content}\n\nSpeech metrics: ${JSON.stringify(metrics)}\n\nKnown recurring signatures: ${(opts.learnerSignatures ?? []).join(', ') || 'none'}` },
+              { type: 'image' as const, dataUrl: opts.imageDataUrl },
+            ]
+            : [
+              `Task prompt: ${opts.taskPrompt ?? 'free speech'}`,
+              `Expected register: ${opts.register ?? 'neutral'}`,
+              `Transcript: ${turn.content}`,
+              `Speech metrics: ${JSON.stringify(metrics)}`,
+              `Known recurring signatures: ${(opts.learnerSignatures ?? []).join(', ') || 'none'}`,
+            ].join('\n\n'),
         }],
       });
       const evaluation = res.data;

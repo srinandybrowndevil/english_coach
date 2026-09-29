@@ -13,12 +13,12 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 6 | System architecture | Not started | No | No | — | — |  |
 | 7 | Main navigation | Partial (nav structure only) | No | No | src/app/(app)/layout.tsx | — | Phase 1 |
 | 8 | Page: Home | Not started | No | No | — | — |  |
-| 9 | Page: My Tutor | Not started | No | No | — | — |  |
-| 10 | Page: Speak | Not started | No | No | — | — |  |
+| 9 | Page: My Tutor | Implemented | Yes | Pending UI polish | src/app/(app)/tutor/, src/server/services/tutor.ts | tests/integration/conversation.test.ts | Phase 3 — all 10 modes, voice+text, insight panel |
+| 10 | Page: Speak | Implemented | Yes | Pending UI polish | src/app/(app)/speak/, src/app/api/turns/[id]/evaluate | tests/unit/evaluation/schemas.test.ts | Phase 3 — 10 modes incl. picture description; rapid/timed auto-stop |
 | 11 | Page: Pronunciation | Partial (content/logic) | No | Pending UI | src/content/pronunciation.ts | — | Phase 2 |
 | 12 | IPA module | Partial (content/logic) | No | Pending UI | src/content/pronunciation.ts (ipa_modules) | — | Phase 2 |
 | 13 | Page: Tongue Twisters | Partial (content/logic) | No | Pending UI | src/content/tongue-twisters.ts | — | Phase 2 |
-| 14 | Page: Fluency | Not started | No | No | — | — |  |
+| 14 | Page: Fluency | Implemented | Yes | Pending UI polish | src/app/(app)/fluency/, src/app/api/exercise-attempts | — | Phase 3 — 10 drills + personal best in exercise_attempts |
 | 15 | Page: Listening | Not started | No | No | — | — |  |
 | 16 | Shadowing system | Not started | No | No | — | — |  |
 | 17 | Page: Grammar | Partial (content/logic) | No | Pending UI | src/content/grammar-lessons.ts | — | Phase 2 |
@@ -47,13 +47,13 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 40 | Spaced repetition | Implemented | Yes | Pending UI | src/lib/learning/srs.ts | tests/unit/learning/srs.test.ts | Phase 2 |
 | 41 | Mistake memory engine | Implemented | Yes | Pending UI | src/lib/memory/mistakes.ts | tests/unit/memory/mistakes.test.ts | Phase 2 |
 | 42 | Fossilised error detection | Implemented | Yes | Pending UI | src/lib/memory/fossilised.ts | tests/unit/memory/fossilised.test.ts | Phase 2 |
-| 43 | Tutor memory | Partial (tutor_memories kinds) | No | No | src/lib/db/schema/content.ts | — | Phase 1 |
-| 44 | Voice architecture | Not started | No | No | — | — |  |
-| 45 | Audio privacy | Not started | No | No | — | — |  |
-| 46 | AI tutor orchestrator | Not started | No | No | — | — |  |
-| 47 | Core tutor system behaviour | Not started | No | No | — | — |  |
-| 48 | Correction modes | Not started | No | No | — | — |  |
-| 49 | Speaking analysis | Implemented | Yes | Pending UI | src/lib/scoring/speech-metrics.ts | tests/unit/scoring/speech-metrics.test.ts | Phase 2 |
+| 43 | Tutor memory | Implemented | Yes | Pending UI | src/server/services/memory.ts | tests/integration/conversation.test.ts | Phase 3 — sha256 dedupe, keyword-overlap recall; embeddings deferred |
+| 44 | Voice architecture | Deferred | No | No | docs/voice.md | — | requires provider realtime credentials + ephemeral-token flow; STT/TTS provider interfaces keep it pluggable |
+| 45 | Audio privacy | Implemented | Yes | Yes | src/server/services/speech.ts, src/app/api/audio/[turnId] | tests/integration/audio-retention.test.ts | Phase 3 — retention off/7d/30d, owner-only streaming, purgeExpired |
+| 46 | AI tutor orchestrator | Implemented | Yes | Pending UI | src/server/services/tutor.ts, src/lib/ai/prompts/tutor.ts | tests/integration/conversation.test.ts | Phase 3 — targeted retrieval + TutorTurnSchema frontier call |
+| 47 | Core tutor system behaviour | Implemented | Yes | Pending UI | src/app/(app)/tutor/TutorClient.tsx | — | Phase 3 — TUTOR_MODES all present |
+| 48 | Correction modes | Implemented | Yes | Pending UI | src/lib/ai/prompts/tutor.ts, src/app/(app)/tutor/TutorClient.tsx | — | Phase 3 — live-vs-finish toggle maps to balanced/fluency |
+| 49 | Speaking analysis | Implemented | Yes | Yes | src/lib/scoring/speech-metrics.ts, speech_metrics rows | tests/unit/scoring/speech-metrics.test.ts | Phase 3 — now persisted per evaluated turn |
 | 50 | Fluency score | Implemented | Yes | Pending UI | src/lib/scoring/fluency.ts | tests/unit/scoring/fluency.test.ts | Phase 2 |
 | 51 | Grammar score | Implemented | Yes | Pending UI | src/lib/scoring/grammar.ts | tests/unit/scoring/grammar-pronunciation.test.ts | Phase 2 |
 | 52 | Pronunciation score | Implemented | Yes | Pending UI | src/lib/scoring/pronunciation.ts | tests/unit/scoring/grammar-pronunciation.test.ts | Phase 2 |
@@ -69,21 +69,21 @@ Status per spec section after **Phase 1** (scaffold, auth, DB, AI layer).
 | 62 | Monthly report | Not started | No | No | — | — |  |
 | 63 | Database schema | Implemented (all tables) | Yes (migration applied in tests) | Yes | src/lib/db/schema/*, drizzle/migrations/ | tests/integration/db.test.ts | Phase 1 |
 | 64 | Important database details | Implemented (§64 columns verbatim) | Yes (unique constraint test) | Yes | src/lib/db/schema/{mistakes,skills,vocabulary,sessions}.ts | tests/integration/db.test.ts | Phase 1 |
-| 65 | API/service boundaries | Partial (services index only) | No | No | src/server/services/index.ts | — | Phase 1 |
-| 66 | AI structured output | Partial (structured() zod validation + responders) | No | No | src/lib/ai/types.ts, mock/responders.ts | tests/unit/ai/mock.test.ts | Phase 1 |
-| 67 | AI evaluation safeguards | Partial (prompt_versions + ai_evaluation_events) | No | No | src/lib/db/schema/ai.ts | — | Phase 1 |
+| 65 | API/service boundaries | Implemented | Yes | Yes | src/lib/ai/prompts/, src/server/services/prompt-version.ts | — | Phase 3 — versioned prompt text registered in prompt_versions |
+| 66 | AI structured output | Implemented | Yes | Pending UI | src/lib/evaluation/schemas.ts | tests/unit/evaluation/schemas.test.ts | + SessionSummary/RoleplayTurn/TamilToEnglish |
+| 67 | AI evaluation safeguards | Implemented | Yes | Yes | ai_evaluation_events.prompt_version_id, input_evidence | tests/integration/conversation.test.ts | Phase 3 — every tutor/evaluator call records version + evidence |
 | 68 | Design system | Partial (tokens, palette, layout shell) | No | No | src/app/globals.css | — | Phase 1 |
 | 69 | Accessibility | Not started | No | No | — | — |  |
 | 70 | Settings | Not started | No | No | — | — |  |
 | 71 | Personal data export | Not started | No | No | — | — |  |
 | 72 | Security | Partial (auth, CSRF, headers, rate limit, secure cookies) | Yes (allowlist/token tests) | Yes | src/lib/auth/*, src/proxy.ts, src/lib/security/*, next.config.ts | tests/unit/auth/allowlist.test.ts, tests/unit/env.test.ts | Phase 1 |
 | 73 | Observability | Partial (AI event logging) | No | No | src/lib/ai/usage.ts | — | Phase 1 |
-| 74 | Cost controls | Partial (ai_evaluation_events usage rows) | No | No | src/lib/ai/usage.ts | — | Phase 1 |
-| 75 | Failure behaviour | Not started | No | No | — | — |  |
+| 74 | Cost controls | Partial | Yes | Pending UI | src/lib/ai/usage.ts | — | events recorded with tokens+ms+cost fields; dashboard UI later |
+| 75 | Failure behaviour | Implemented | Yes | Partial | src/app/api/sessions/[id]/turn, src/hooks/usePendingTurn.ts | tests/integration/* | stt_failed/tutor_failed/evaluation_status=failed paths; IndexedDB pending-turn restore |
 | 76 | Repository structure | Implemented | No | No | repository root | — | Phase 1 |
 | 77 | Seed content | Implemented | Yes | Pending UI | src/lib/db/seed.ts, src/content/* | tests/integration/seed.test.ts | Phase 2 |
 | 78 | Required workflows | Not started | No | No | — | — |  |
-| 79 | Session summary | Not started | No | No | — | — |  |
+| 79 | Session summary | Implemented | Yes | Yes | src/server/services/session.ts, src/app/(app)/sessions/[id] | tests/integration/conversation.test.ts | Phase 3 — SessionSummarySchema on overall_summary |
 | 80 | Gamification | Not started | No | No | — | — |  |
 | 81 | Required test strategy | Not started | No | No | — | — |  |
 | 82 | Critical unit tests | Implemented | Yes | Yes | tests/unit/*, tests/fixtures/* | vitest 100+ tests | Phase 2 — engines tested; UI paths pending |

@@ -25,7 +25,7 @@ export function RecorderControls({ r, onSend }: { r: ReturnType<typeof useRecord
       </div>
 
       {recording && (
-        <div className="h-1.5 w-full rounded bg-neutral-200 dark:bg-neutral-800" role="meter" aria-label="microphone level">
+        <div className="h-1.5 w-full rounded bg-neutral-200 dark:bg-neutral-800" role="meter" aria-label="microphone level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(r.level * 100)}>
           <div className="h-1.5 rounded bg-emerald-500 transition-[width] duration-100" style={{ width: `${Math.round(r.level * 100)}%` }} />
         </div>
       )}

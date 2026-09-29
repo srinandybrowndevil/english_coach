@@ -35,15 +35,15 @@ export default async function SessionSummaryPage({ params }: { params: Promise<{
               <ul className="mt-2 space-y-2">
                 {summary.topMistakes.map((m, i) => (
                   <li key={i} className="rounded-lg border border-neutral-200 p-3 text-sm dark:border-neutral-800">
-                    "{m.quote}" → "{m.correction}" <span className="font-mono text-xs text-neutral-500">{m.rule}</span>
+                    &quot;{m.quote}&quot; → &quot;{m.correction}&quot; <span className="font-mono text-xs text-neutral-500">{m.rule}</span>
                   </li>
                 ))}
               </ul>
               <Link href="/mistakes" className="mt-2 inline-block text-sm underline">Review in Mistake Vault →</Link>
             </section>
           )}
-          {summary.bestSentence && <section><h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Best sentence</h4><p className="mt-1 text-sm">"{summary.bestSentence}"</p></section>}
-          {summary.upgradedExpression && <section><h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Upgraded</h4><p className="mt-1 text-sm">"{summary.upgradedExpression.original}" → "{summary.upgradedExpression.upgraded}"</p></section>}
+          {summary.bestSentence && <section><h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Best sentence</h4><p className="mt-1 text-sm">&quot;{summary.bestSentence}&quot;</p></section>}
+          {summary.upgradedExpression && <section><h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Upgraded</h4><p className="mt-1 text-sm">&quot;{summary.upgradedExpression.original}&quot; → &quot;{summary.upgradedExpression.upgraded}&quot;</p></section>}
           {summary.vocabularyLearned.length > 0 && <section><h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Vocabulary</h4><p className="mt-1 text-sm">{summary.vocabularyLearned.join(' · ')}</p></section>}
           {summary.practiceScheduled.length > 0 && <section><h4 className="text-xs font-semibold uppercase tracking-wide text-neutral-500">Practice scheduled</h4><ul className="mt-1 list-disc pl-5 text-sm">{summary.practiceScheduled.map((p, i) => <li key={i}>{p}</li>)}</ul></section>}
           <section className="rounded-xl bg-neutral-900 p-4 text-white dark:bg-neutral-100 dark:text-neutral-900">

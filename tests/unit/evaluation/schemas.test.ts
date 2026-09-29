@@ -108,3 +108,12 @@ describe('evaluation schemas', () => {
     expect(() => TutorTurnSchema.parse(rest)).toThrow();
   });
 });
+
+describe('TutorTurn difficulty bounds', () => {
+  it('rejects difficultyAdjustment outside -1|0|1', () => {
+    expect(TutorTurnSchema.safeParse({
+      reply: 'hi', corrections: [], followUpQuestion: null,
+      difficultyAdjustment: 2, memoryCandidates: [], tamilNote: null,
+    }).success).toBe(false);
+  });
+});

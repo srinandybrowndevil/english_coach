@@ -51,3 +51,35 @@ dashboard and §67 evaluator evidence later.
 Implement the interface(s) in `src/lib/ai/<vendor>/`, wire into `getAI()`
 selection, register mock responders for any `structured()` name you introduce,
 add tests against the mock.
+
+## Orchestrator (Phase 3)
+
+`TutorService.respond` (src/server/services/tutor.ts) is the §46 orchestrator.
+Per learner turn it does *targeted* retrieval only — settings, learner profile,
+8 due mistake patterns, 6 due vocabulary rows, last session summary, 5 learner
+memories, last 12 turns — builds `TutorContext`, renders
+`buildTutorSystemPrompt` (`src/lib/ai/prompts/tutor.ts`, `TUTOR_PROMPT_VERSION =
+'tutor.v1'`), calls `llm.structured` tier `frontier` against `TutorTurnSchema`,
+persists both turns, applies `memoryCandidates` and `corrections`, and clamps
+`difficultyAdjustment` to 1–5 on the session.
+
+`EvaluationService.evaluateTurn` runs `SPEECH_EVALUATOR_SYSTEM`
+(`evaluators.v1`, tier `balanced`) + deterministic `computeFluency/Grammar/
+VocabularyScore`, stores `{evaluation, scores}` on the turn, a `speech_metrics`
+row, and an `ai_evaluation_events` row carrying `evaluatorVersion`, the resolved
+`promptVersionId` (`prompt_templates`/`prompt_versions`, registered lazily by
+`ensurePromptVersion`), `confidence` and `inputEvidence`. Failure leaves
+`evaluation_status='failed'` (retryable, §75).
+
+`SessionService.end` generates `SessionSummarySchema` via
+`SESSION_SUMMARY_SYSTEM` into `learning_sessions.overall_summary` (jsonb).
+
+Mock responders registered in `src/lib/ai/mock/responders.ts`: `tutor-turn`
+(echoes `detectFossilised` hits as corrections), `speech-evaluation` (real
+detector → GrammarError, all ratings 50 marked "mock provider — no model
+judgement"), `session-summary`. They are honest by construction — a clean
+transcript produces zero corrections.
+
+`ChatMessage.content` also accepts `ContentPart[]` (`{type:'image', dataUrl}`)
+for §10 picture description; the OpenAI impl maps to `input_image`/`input_text`,
+mock providers ignore images.

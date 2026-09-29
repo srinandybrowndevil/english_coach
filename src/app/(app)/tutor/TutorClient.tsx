@@ -5,7 +5,7 @@ import { TranscriptView, type Turn } from '@/components/voice/TranscriptView';
 import { usePendingTurn } from '@/hooks/usePendingTurn';
 import { useRecorder } from '@/hooks/useRecorder';
 import { useTts } from '@/hooks/useTts';
-import { CORRECTION_MODES, TUTOR_MODES, type CorrectionMode, type TutorMode } from '@/lib/ai/prompts/tutor';
+import { TUTOR_MODES, type CorrectionMode, type TutorMode } from '@/lib/ai/prompts/tutor';
 import type { SessionSummary, TutorTurn } from '@/lib/types-eval';
 
 type Insight = { recurringMistakes: { signature: string; example: string | null; correction: string | null; occurrences: number; status: string }[]; vocabularyDue: { word: string; meaning: string }[] };
@@ -20,7 +20,6 @@ export function TutorClient() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [voiceSession, setVoiceSession] = useState(true);
   const [turns, setTurns] = useState<Turn[]>([]);
-  const [tamilNotes, setTamilNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
@@ -71,7 +70,6 @@ export function TutorClient() {
         { id: data.learnerTurn.id, role: 'learner', text: data.learnerTurn.text },
         { id: data.learnerTurn.tutorTurnId ?? crypto.randomUUID(), role: 'tutor', text: t.reply, tamilNote: t.tamilNote },
       ]);
-      if (t.tamilNote) setTamilNotes((m) => ({ ...m, [data.learnerTurn.id]: t.tamilNote! }));
       if (autoPlay) void tts.speak(t.reply);
     } catch {
       setSendError('Network dropped — your recording is kept below; press Retry.');
@@ -176,7 +174,7 @@ export function TutorClient() {
           {(insight?.recurringMistakes ?? []).map((m) => (
             <div key={m.signature} className="rounded-lg border border-neutral-200 p-2 dark:border-neutral-800">
               <p className="font-mono text-xs">{m.signature}</p>
-              <p className="mt-0.5 text-xs text-neutral-500">"{m.example}" → "{m.correction}" · {m.occurrences}× {m.status}</p>
+              <p className="mt-0.5 text-xs text-neutral-500">&quot;{m.example}&quot; → &quot;{m.correction}&quot; · {m.occurrences}× {m.status}</p>
             </div>
           ))}
           {insight?.vocabularyDue.map((v) => (
@@ -201,10 +199,10 @@ function SummaryView({ s, onRestart }: { s: SessionSummary; onRestart: () => voi
       <p className="text-sm text-neutral-600 dark:text-neutral-400">{s.whatImproved}</p>
       {s.topMistakes.length > 0 && (
         <div><h4 className="text-sm font-medium">Top mistakes</h4>
-          <ul className="mt-1 space-y-1 text-sm">{s.topMistakes.map((m, i) => <li key={i}>"{m.quote}" → "{m.correction}" <span className="font-mono text-xs">({m.rule})</span></li>)}</ul></div>
+          <ul className="mt-1 space-y-1 text-sm">{s.topMistakes.map((m, i) => <li key={i}>&quot;{m.quote}&quot; → &quot;{m.correction}&quot; <span className="font-mono text-xs">({m.rule})</span></li>)}</ul></div>
       )}
       {s.bestSentence && <p className="text-sm"><strong>Best sentence:</strong> {s.bestSentence}</p>}
-      {s.upgradedExpression && <p className="text-sm"><strong>Upgrade:</strong> "{s.upgradedExpression.original}" → "{s.upgradedExpression.upgraded}"</p>}
+      {s.upgradedExpression && <p className="text-sm"><strong>Upgrade:</strong> &quot;{s.upgradedExpression.original}&quot; → &quot;{s.upgradedExpression.upgraded}&quot;</p>}
       {s.vocabularyLearned.length > 0 && <p className="text-sm"><strong>New words:</strong> {s.vocabularyLearned.join(', ')}</p>}
       <p className="text-sm"><strong>Next:</strong> {s.nextRecommendedActivity}</p>
       <button onClick={onRestart} className="w-fit rounded-lg bg-neutral-900 px-4 py-2 text-sm text-white dark:bg-neutral-100 dark:text-neutral-900">New session</button>
