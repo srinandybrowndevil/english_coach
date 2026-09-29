@@ -8,6 +8,7 @@ export const vocabularyItems = pgTable(
   'vocabulary_items',
   {
     id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
     word: text('word').notNull(),
     pronunciation: text('pronunciation'),
     ipa: text('ipa'),
@@ -46,6 +47,8 @@ export const learnerVocabulary = pgTable(
     usageScore: real('usage_score').notNull().default(0),
     lastReviewedAt: timestamp('last_reviewed_at', { withTimezone: true }),
     nextReviewAt: timestamp('next_review_at', { withTimezone: true }),
+    intervalIndex: integer('interval_index').notNull().default(0),
+    easeFactor: real('ease_factor').notNull().default(2.0),
     successfulContextUses: integer('successful_context_uses').notNull().default(0),
     learnerSentence: text('learner_sentence'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -75,6 +78,7 @@ export const vocabularyReviews = pgTable(
 // §21 collocations
 export const collocations = pgTable('collocations', {
   id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
   phrase: text('phrase').notNull().unique(),
   meaning: text('meaning'),
   register: text('register'),
@@ -85,6 +89,7 @@ export const collocations = pgTable('collocations', {
 // §20 idioms
 export const idioms = pgTable('idioms', {
   id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
   phrase: text('phrase').notNull().unique(),
   meaning: text('meaning').notNull(),
   naturalContext: text('natural_context'),
@@ -99,6 +104,7 @@ export const idioms = pgTable('idioms', {
 // §19 phrasal verbs
 export const phrasalVerbs = pgTable('phrasal_verbs', {
   id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
   verb: text('verb').notNull(),
   particle: text('particle').notNull(),
   meaning: text('meaning').notNull(),

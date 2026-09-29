@@ -6,8 +6,27 @@ import { learningSessions } from './sessions';
 import { tutorMemoryKind } from './enums';
 
 // generic exercise catalogue — kind/domain-specific payload in jsonb
+// generic curated-content store for categories without a dedicated table
+// (tongue twisters, pronunciation sounds, IPA progression, listening/writing
+// templates, debate/presentation topics, modern English, register sets, recovery
+// phrases, precision maps — seeded by src/content/)
+export const contentItems = pgTable(
+  'content_items',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    contentKind: text('content_kind').notNull(),
+    title: text('title').notNull(),
+    difficulty: integer('difficulty'),
+    payload: jsonb('payload').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('content_items_kind_idx').on(t.contentKind)],
+);
+
 export const exerciseDefinitions = pgTable('exercise_definitions', {
   id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
   domain: text('domain').notNull(),
   kind: text('kind').notNull(),
   title: text('title').notNull(),
@@ -40,6 +59,7 @@ export const exerciseAttempts = pgTable(
 // §26 business modules, §27 negotiation personas, §31 real-life scenarios, §30 debate
 export const roleplayScenarios = pgTable('roleplay_scenarios', {
   id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
   domain: text('domain').notNull(), // business | negotiation | simulator | debate | presentation
   title: text('title').notNull(),
   description: text('description'),

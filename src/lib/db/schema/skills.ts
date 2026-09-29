@@ -7,6 +7,7 @@ import { cefrLevel, skillStatus } from './enums';
 // spec §38 skill graph
 export const skillDefinitions = pgTable('skill_definitions', {
   id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(),
   domain: text('domain').notNull(),
   name: text('name').notNull(),
   description: text('description'),
@@ -52,6 +53,8 @@ export const learnerSkillStates = pgTable(
     successCount: integer('success_count').notNull().default(0),
     lastPractisedAt: timestamp('last_practised_at', { withTimezone: true }),
     nextReviewAt: timestamp('next_review_at', { withTimezone: true }),
+    intervalIndex: integer('interval_index').notNull().default(0),
+    easeFactor: real('ease_factor').notNull().default(2.0),
     status: skillStatus('status').notNull().default('unseen'),
     evidenceCount: integer('evidence_count').notNull().default(0),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

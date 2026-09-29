@@ -1,0 +1,10 @@
+{
+  "articleOmission": "I went to office and then I met client. We discussed about project and I gave presentation.",
+  "prepositionMisuse": "We need to discuss on the pricing model before Friday.",
+  "fillerHeavy": {
+    "transcript": "So, um, like, I was basically thinking, you know, that uh we could, I mean, basically we could like maybe try a different approach, okay, because actually the current one, you know, it is not really working, and um, like, the team is kind of stuck, right, so basically we need, hmm, something new.",
+    "expectedMinFillers": 9
+  },
+  "cleanB2": "Yesterday I reviewed the quarterly report with the finance team. Although the revenue numbers looked strong, I noticed that operating costs had risen faster than expected, which worried the board. I suggested that we renegotiate supplier contracts and postpone the office expansion until the audit finishes.",
+  "didntWent": "I didn't went there yesterday because I was busy."
+}

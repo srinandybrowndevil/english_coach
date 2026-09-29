@@ -106,6 +106,17 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
+CREATE TABLE "content_items" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
+	"content_kind" text NOT NULL,
+	"title" text NOT NULL,
+	"difficulty" integer,
+	"payload" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "content_items_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
 CREATE TABLE "exercise_attempts" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"learner_id" uuid NOT NULL,
@@ -118,12 +129,14 @@ CREATE TABLE "exercise_attempts" (
 --> statement-breakpoint
 CREATE TABLE "exercise_definitions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
 	"domain" text NOT NULL,
 	"kind" text NOT NULL,
 	"title" text NOT NULL,
 	"difficulty" integer DEFAULT 1 NOT NULL,
 	"payload" jsonb NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "exercise_definitions_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "journal_entries" (
@@ -157,6 +170,7 @@ CREATE TABLE "reading_attempts" (
 --> statement-breakpoint
 CREATE TABLE "roleplay_scenarios" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
 	"domain" text NOT NULL,
 	"title" text NOT NULL,
 	"description" text,
@@ -164,7 +178,8 @@ CREATE TABLE "roleplay_scenarios" (
 	"difficulty" text,
 	"opener" text,
 	"config" jsonb,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "roleplay_scenarios_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "roleplay_sessions" (
@@ -303,6 +318,8 @@ CREATE TABLE "learner_skill_states" (
 	"success_count" integer DEFAULT 0 NOT NULL,
 	"last_practised_at" timestamp with time zone,
 	"next_review_at" timestamp with time zone,
+	"interval_index" integer DEFAULT 0 NOT NULL,
+	"ease_factor" real DEFAULT 2 NOT NULL,
 	"status" "skill_status" DEFAULT 'unseen' NOT NULL,
 	"evidence_count" integer DEFAULT 0 NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
@@ -310,6 +327,7 @@ CREATE TABLE "learner_skill_states" (
 --> statement-breakpoint
 CREATE TABLE "skill_definitions" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
 	"domain" text NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
@@ -318,7 +336,8 @@ CREATE TABLE "skill_definitions" (
 	"cefr_relevance" "cefr_level",
 	"exercise_types" jsonb,
 	"mastery_threshold" real DEFAULT 0.8 NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "skill_definitions_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "skill_prerequisites" (
@@ -434,9 +453,13 @@ CREATE TABLE "mistake_patterns" (
 	"first_seen_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"last_seen_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"occurrence_count" integer DEFAULT 1 NOT NULL,
-	"contexts_seen" integer DEFAULT 1 NOT NULL,
+	"contexts_seen" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"successful_review_count" integer DEFAULT 0 NOT NULL,
 	"review_streak" integer DEFAULT 0 NOT NULL,
+	"interval_index" integer DEFAULT 0 NOT NULL,
+	"ease_factor" real DEFAULT 2 NOT NULL,
+	"success_history" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"monitoring_since" timestamp with time zone,
 	"next_review_at" timestamp with time zone,
 	"status" "mistake_status" DEFAULT 'new' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -447,22 +470,25 @@ CREATE TABLE "mistake_reviews" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"mistake_pattern_id" uuid NOT NULL,
 	"reviewed_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"successful" integer DEFAULT 0 NOT NULL,
+	"successful" boolean NOT NULL,
 	"context" text
 );
 --> statement-breakpoint
 CREATE TABLE "collocations" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
 	"phrase" text NOT NULL,
 	"meaning" text,
 	"register" text,
 	"example" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "collocations_slug_unique" UNIQUE("slug"),
 	CONSTRAINT "collocations_phrase_unique" UNIQUE("phrase")
 );
 --> statement-breakpoint
 CREATE TABLE "idioms" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
 	"phrase" text NOT NULL,
 	"meaning" text NOT NULL,
 	"natural_context" text,
@@ -472,6 +498,7 @@ CREATE TABLE "idioms" (
 	"example" text,
 	"misuse_warning" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "idioms_slug_unique" UNIQUE("slug"),
 	CONSTRAINT "idioms_phrase_unique" UNIQUE("phrase")
 );
 --> statement-breakpoint
@@ -485,6 +512,8 @@ CREATE TABLE "learner_vocabulary" (
 	"usage_score" real DEFAULT 0 NOT NULL,
 	"last_reviewed_at" timestamp with time zone,
 	"next_review_at" timestamp with time zone,
+	"interval_index" integer DEFAULT 0 NOT NULL,
+	"ease_factor" real DEFAULT 2 NOT NULL,
 	"successful_context_uses" integer DEFAULT 0 NOT NULL,
 	"learner_sentence" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -493,16 +522,19 @@ CREATE TABLE "learner_vocabulary" (
 --> statement-breakpoint
 CREATE TABLE "phrasal_verbs" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
 	"verb" text NOT NULL,
 	"particle" text NOT NULL,
 	"meaning" text NOT NULL,
 	"example" text,
 	"separable" boolean,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "phrasal_verbs_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "vocabulary_items" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"slug" text NOT NULL,
 	"word" text NOT NULL,
 	"pronunciation" text,
 	"ipa" text,
@@ -519,7 +551,8 @@ CREATE TABLE "vocabulary_items" (
 	"register" text,
 	"common_mistakes" jsonb,
 	"category" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "vocabulary_items_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "vocabulary_reviews" (
@@ -612,6 +645,7 @@ CREATE INDEX "assessment_responses_item_idx" ON "assessment_responses" USING btr
 CREATE INDEX "assessment_sections_assessment_idx" ON "assessment_sections" USING btree ("assessment_id");--> statement-breakpoint
 CREATE INDEX "auth_tokens_user_id_idx" ON "auth_tokens" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "sessions_user_id_idx" ON "sessions" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "content_items_kind_idx" ON "content_items" USING btree ("content_kind");--> statement-breakpoint
 CREATE INDEX "exercise_attempts_learner_idx" ON "exercise_attempts" USING btree ("learner_id");--> statement-breakpoint
 CREATE INDEX "exercise_attempts_exercise_idx" ON "exercise_attempts" USING btree ("exercise_id");--> statement-breakpoint
 CREATE INDEX "journal_entries_learner_idx" ON "journal_entries" USING btree ("learner_id");--> statement-breakpoint

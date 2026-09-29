@@ -1,5 +1,5 @@
 import {
-  pgTable, uuid, text, integer, timestamp, index, uniqueIndex,
+  pgTable, uuid, text, integer, real, boolean, jsonb, timestamp, index, uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { users } from './auth';
 import { mistakeStatus } from './enums';
@@ -43,9 +43,13 @@ export const mistakePatterns = pgTable(
     firstSeenAt: timestamp('first_seen_at', { withTimezone: true }).notNull().defaultNow(),
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
     occurrenceCount: integer('occurrence_count').notNull().default(1),
-    contextsSeen: integer('contexts_seen').notNull().default(1),
+    contextsSeen: jsonb('contexts_seen').$type<string[]>().notNull().default([]),
     successfulReviewCount: integer('successful_review_count').notNull().default(0),
     reviewStreak: integer('review_streak').notNull().default(0),
+    intervalIndex: integer('interval_index').notNull().default(0),
+    easeFactor: real('ease_factor').notNull().default(2.0),
+    successHistory: jsonb('success_history').$type<{ at: string; context: string }[]>().notNull().default([]),
+    monitoringSince: timestamp('monitoring_since', { withTimezone: true }),
     nextReviewAt: timestamp('next_review_at', { withTimezone: true }),
     status: mistakeStatus('status').notNull().default('new'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -84,7 +88,7 @@ export const mistakeReviews = pgTable(
       .notNull()
       .references(() => mistakePatterns.id, { onDelete: 'cascade' }),
     reviewedAt: timestamp('reviewed_at', { withTimezone: true }).notNull().defaultNow(),
-    successful: integer('successful').notNull().default(0), // 0/1 keeps PGlite happy
+    successful: boolean('successful').notNull(),
     context: text('context'),
   },
   (t) => [index('mistake_reviews_pattern_idx').on(t.mistakePatternId)],
