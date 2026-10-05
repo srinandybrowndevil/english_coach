@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PUBLIC_PREFIXES = ['/login', '/api/auth/', '/icons/', '/_next/'];
-const PUBLIC_EXACT = ['/manifest.webmanifest', '/favicon.ico'];
+const PUBLIC_PREFIXES = ['/login', '/api/auth/', '/icons/', '/_next/', '/icon-', '/apple-touch-icon'];
+const PUBLIC_EXACT = ['/manifest.webmanifest', '/favicon.ico', '/sw.js', '/offline'];
 const SID_SHAPE = /^[A-Za-z0-9_-]{32,}$/;
 
 // Edge-layer gate: checks cookie presence/shape only. Real DB validation happens
